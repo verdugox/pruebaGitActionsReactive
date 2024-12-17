@@ -1,8 +1,14 @@
 spring:
   application:
     name: client-service
+
   data:
     mongodb:
-      uri: ${MONGO_URI:mongodb://localhost:27017/clientsdb}
+      uri: mongodb://localhost:27017/clientsdb  # URI simplificada para MongoDB
+
 server:
-  port: 8086
+  port: 8086  # Cambié el puerto a 8087 como en tu 'dev-vars.yml'
+
+logging:
+  level:
+    root: INFO  # Configuración del nivel de log
