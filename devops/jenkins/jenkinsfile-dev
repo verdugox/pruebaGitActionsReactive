@@ -1,0 +1,66 @@
+pipeline {
+    agent { label 'windows' }  // Agente Jenkins en Windows para entorno local
+
+    environment {
+        MAVEN_HOME = tool 'Maven 3.9.9'  // Herramienta Maven preconfigurada
+        JAVA_HOME = tool 'JDK17'         // Herramienta JDK17 preconfigurada
+        DEPLOY_ENV = "dev"               // Entorno actual (local dev)
+        CONFIG_FILE = "devops/deploy/dev-vars.yaml"  // Configuración de entorno dev
+    }
+
+    stages {
+        stage('Preparation') {
+            steps {
+                echo "Preparing environment for ${DEPLOY_ENV} deployment..."
+                checkout scm
+                bat "java -version"
+                bat "mvn --version"
+                bat "echo Using configuration from ${CONFIG_FILE}"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building project with Maven..."
+                dir('client-service') {  // Asume que el proyecto está en 'client-service'
+                    bat "mvn clean package"
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+                dir('client-service') {
+                    bat "mvn test"
+                }
+            }
+        }
+
+        stage('Deploy to Localhost') {
+            steps {
+                echo "Deploying to localhost..."
+                script {
+                    def jarFile = "client-service/target/client-service.jar"
+                    bat "java -jar ${jarFile} --spring.config.location=${CONFIG_FILE}"
+                }
+            }
+        }
+
+        stage('Verification') {
+            steps {
+                echo "Verifying that the service is running on localhost..."
+                bat "curl http://localhost:8080/actuator/health || echo 'Service not responding'"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully for ${DEPLOY_ENV}!"
+        }
+        failure {
+            echo "Pipeline failed. Check the logs for details."
+        }
+    }
+}
