@@ -50,7 +50,7 @@ pipeline {
         stage('Verification') {
             steps {
                 echo "Verifying that the service is running on localhost..."
-                bat "curl http://localhost:8080/actuator/health || echo 'Service not responding'"
+                bat "curl http://localhost:8087/actuator/health || echo 'Service not responding'"
             }
         }
     }
