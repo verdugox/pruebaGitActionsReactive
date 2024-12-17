@@ -11,26 +11,21 @@ public class ClientController {
 
     private final ClientService service;
 
-
     public ClientController(ClientService service) {
         this.service = service;
     }
-
     @GetMapping
     public Flux<Client> getAllClients() {
            return service.getAllClients();
     }
-
     @GetMapping
     public Mono<Client> getClientById(@PathVariable String id) {
            return service.getClientById(id);
     }
-
     @PostMapping
     public Mono<Client> createClient(@RequestBody Client client){
         return service.saveClient(client);
     }
-
     @DeleteMapping
     public Mono<Void> deleteClient(@PathVariable String id){
         return service.deleteClient(id);
