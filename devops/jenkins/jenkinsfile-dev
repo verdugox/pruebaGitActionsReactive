@@ -1,5 +1,6 @@
 pipeline {
-    agent any  // Ejecutar en cualquier nodo disponible
+    agent any
+
     environment {
         MAVEN_HOME = tool 'Maven 3.9.9'
         JAVA_HOME = tool 'JDK17'
@@ -10,26 +11,33 @@ pipeline {
     stages {
         stage('Preparation') {
             steps {
-                echo "Preparing environment for ${DEPLOY_ENV} deployment..."
+                echo "Preparing environment..."
                 checkout scm
-                bat "java -version"
-                bat "mvn --version"
+                bat "${MAVEN_HOME}/bin/mvn --version"
             }
         }
+
         stage('Build') {
             steps {
-                echo "Building project..."
                 dir('client-service') {
-                    bat "mvn clean package"
+                    bat "${MAVEN_HOME}/bin/mvn clean package"
                 }
             }
         }
+
+        stage('Verify JAR File') {
+            steps {
+                dir('client-service') {
+                    bat "dir target"
+                }
+            }
+        }
+
         stage('Deploy to Localhost') {
             steps {
                 echo "Deploying to localhost..."
-                script {
-                    def jarFile = "client-service/target/client-service.jar"
-                    bat "java -jar ${jarFile} --spring.config.location=${CONFIG_FILE}"
+                dir('client-service') {
+                    bat "java -jar target/client-service-0.0.1-SNAPSHOT.jar --spring.config.location=../devops/deploy/dev-vars.yaml"
                 }
             }
         }
