@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
+@RequestMapping("/api/clients")
 public class ClientController {
 
     private final ClientService service;
@@ -18,7 +19,7 @@ public class ClientController {
     public Flux<Client> getAllClients() {
            return service.getAllClients();
     }
-    @GetMapping
+    @GetMapping("/{id}")
     public Mono<Client> getClientById(@PathVariable String id) {
            return service.getClientById(id);
     }
