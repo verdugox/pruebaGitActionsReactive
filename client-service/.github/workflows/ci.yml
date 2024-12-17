@@ -32,15 +32,13 @@ jobs:
           echo "MAVEN_HOME=/opt/maven" >> $GITHUB_ENV
           echo "/opt/maven/bin" >> $GITHUB_PATH
 
-      # 4. Construir el proyecto con Maven (especificar el directorio correcto)
+      # 4. Construir el proyecto con Maven usando la opción -f
       - name: Build Project with Maven
-        run: mvn clean package
-        working-directory: client-service  # Directorio donde está pom.xml
+        run: mvn -f client-service/pom.xml clean package
 
       # 5. Ejecutar pruebas
       - name: Run Unit Tests
-        run: mvn test
-        working-directory: client-service  # Directorio donde está pom.xml
+        run: mvn -f client-service/pom.xml test
 
       # 6. Mensaje final
       - name: Notify Success
