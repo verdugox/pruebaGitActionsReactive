@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'temurin'  # OpenJDK de Eclipse Temurin
+          distribution: 'temurin'
           cache: maven  # Habilitar cache de Maven automáticamente
 
       # 3. Instalar Maven 3.9.9
@@ -32,19 +32,15 @@ jobs:
           echo "MAVEN_HOME=/opt/maven" >> $GITHUB_ENV
           echo "/opt/maven/bin" >> $GITHUB_PATH
 
-      # 3.1. Cambiar al directorio donde está el pom.xml
-      - name: Move to project directory
-        run: cd client-service
-
-      # 4. Construir el proyecto con Maven
+      # 4. Construir el proyecto con Maven (especificar el directorio correcto)
       - name: Build Project with Maven
         run: mvn clean package
-        working-directory: client-service
+        working-directory: client-service  # Directorio donde está pom.xml
 
       # 5. Ejecutar pruebas
       - name: Run Unit Tests
         run: mvn test
-        working-directory: client-service
+        working-directory: client-service  # Directorio donde está pom.xml
 
       # 6. Mensaje final
       - name: Notify Success
