@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - develop  # Ejecutar el flujo solo en la rama 'develop'
+  workflow_dispatch:  # Permitir ejecución manual del workflow
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest  # Sistema operativo en el que se ejecuta el flujo
+    runs-on: windows-latest  # Sistema operativo Windows
 
     steps:
       # 1. Descargar el código fuente
@@ -15,32 +16,28 @@ jobs:
         uses: actions/checkout@v3
 
       # 2. Configurar JDK 17
-      - name: Set up JDK 17
+      - name: Set up Java version
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'temurin'  # OpenJDK de Eclipse Temurin
-          cache: maven  # Habilitar cache de Maven automáticamente
+          distribution: 'temurin'
 
-      # 3. Instalar Maven 3.9.9
-      - name: Set up Maven 3.9.9
+      # 3. Construir y verificar el proyecto con Maven
+      - name: Build and Verify with Maven
+        working-directory: ./client-service  # Cambia al directorio del proyecto
         run: |
-          echo "Downloading Maven 3.9.9"
-          wget https://downloads.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
-          tar -xzvf apache-maven-3.9.9-bin.tar.gz
-          sudo mv apache-maven-3.9.9 /opt/maven
-          echo "MAVEN_HOME=/opt/maven" >> $GITHUB_ENV
-          echo "/opt/maven/bin" >> $GITHUB_PATH
+          dir
+          ls
+          mvn clean install
 
-      # 4. Construir el proyecto con Maven
-      - name: Build Project
-        run: mvn clean package
+      # 4. Subir el archivo JAR como artefacto
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v2
+        with:
+          name: java-app
+          path: './client-service/target/*.jar'
 
-      # 5. Ejecutar pruebas
-      - name: Run Unit Tests
-        run: mvn test
-
-      # 6. Mensaje final
+      # 5. Mensaje final
       - name: Notify Success
         if: success()
         run: echo "Build and tests completed successfully on 'develop' branch!"
