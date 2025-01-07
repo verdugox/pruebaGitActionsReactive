@@ -15,8 +15,27 @@ public class Client {
 
     @Id
     private String id;
-    private String name;
-    private String email;
-    private String phoneNumber;
+
+    private String dni;
+
+    private String nombres;
+
+    private String apellidos;
+
+    private String direccion;
+
+    private String pais;
+
+    private String provincia;
+
+    private String distrito;
+
+    private String correo;
+
+    private String telefono;
+
+    private String vaucher;
+
+    private String referenciaPago;
 
 }

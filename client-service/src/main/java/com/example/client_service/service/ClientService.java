@@ -9,25 +9,30 @@ import reactor.core.publisher.Mono;
 @Service
 public class ClientService {
 
-    private final ClientRepository repository;
+     private final ClientRepository repository;
 
     public ClientService(ClientRepository repository) {
         this.repository = repository;
     }
 
-    public Flux<Client> getAllClients(){
+    public Flux<Client> getAllClients() {
         return repository.findAll();
     }
 
-    public Mono<Client> getClientById(String id){
+    public Mono<Client> getClientById(String id) {
         return repository.findById(id);
     }
 
-    public Mono<Client> saveClient(Client client){
+    public Mono<Boolean> validarPago(String referenciaPago) {
+        // Simulación de validación de pagos (API de Yape o Plin puede integrarse aquí)
+        return Mono.just(referenciaPago != null && !referenciaPago.isEmpty());
+    }
+
+    public Mono<Client> saveClient(Client client) {
         return repository.save(client);
     }
 
-    public Mono<Void> deleteClient(String id){
+    public Mono<Void> deleteClient(String id) {
         return repository.deleteById(id);
     }
 }
