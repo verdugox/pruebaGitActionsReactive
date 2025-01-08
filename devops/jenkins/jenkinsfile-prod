@@ -47,7 +47,8 @@ pipeline {
             steps {
                 echo "Deploying application to Railway..."
                 bat '''
-                C:\\Tools\\run_railway.bat
+                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
+                railway up --detach
                 '''
             }
         }
