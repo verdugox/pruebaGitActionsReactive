@@ -7,6 +7,7 @@ pipeline {
         RAILWAY_TOKEN = credentials('railway-token') // Token almacenado en Jenkins
         DEPLOY_ENV = "prod"
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
+        RAILWAY_SERVICE_ID = "d1d288ff-c26f-4879-8ae6-a32c921b9a00" // Reemplaza con el nombre o ID del servicio
     }
 
     stages {
@@ -46,10 +47,12 @@ pipeline {
         stage('Deploy to Railway') {
             steps {
                 echo "Deploying application to Railway..."
-                bat '''
-                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
-                railway up --detach
-                '''
+                dir('client-service/target') {
+                    bat """
+                    set RAILWAY_TOKEN=%RAILWAY_TOKEN%
+                    railway up --detach --service=%RAILWAY_SERVICE_ID%
+                    """
+                }
             }
         }
     }
