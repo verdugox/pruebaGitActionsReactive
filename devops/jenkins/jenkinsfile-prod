@@ -34,12 +34,12 @@ pipeline {
             }
         }
 
-        stage('Railway CLI Verification') {
+        stage('Verify Railway CLI') {
             steps {
                 echo "Verifying Railway CLI installation..."
-                bat '''
-                wsl railway --version
-                wsl railway login --token=${RAILWAY_TOKEN}
+                sh '''
+                railway --version
+                railway login --token=${RAILWAY_TOKEN}
                 '''
             }
         }
@@ -48,8 +48,8 @@ pipeline {
             steps {
                 echo "Deploying application to Railway..."
                 dir('client-service/target') {
-                    bat '''
-                    wsl railway up --detach --token=${RAILWAY_TOKEN}
+                    sh '''
+                    railway up --detach --token=${RAILWAY_TOKEN}
                     '''
                 }
             }
