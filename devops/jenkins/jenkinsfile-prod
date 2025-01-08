@@ -34,13 +34,10 @@ pipeline {
             }
         }
 
-        stage('Install Railway CLI') {
+        stage('Railway CLI Verification') {
             steps {
-                echo "Installing Railway CLI..."
+                echo "Verifying Railway CLI installation..."
                 bat '''
-                curl -L -o railway.exe https://github.com/railwayapp/cli/releases/latest/download/railway-x86_64-pc-windows-msvc.exe
-                move railway.exe C:\\Tools\\railway.exe
-                set PATH=%PATH%;C:\\Tools
                 railway --version
                 railway login --token=%RAILWAY_TOKEN%
                 '''
@@ -52,7 +49,6 @@ pipeline {
                 echo "Deploying application to Railway..."
                 dir('client-service/target') {
                     bat '''
-                    railway init --detach
                     railway up --detach --token=%RAILWAY_TOKEN%
                     '''
                 }
