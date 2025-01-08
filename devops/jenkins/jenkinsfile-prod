@@ -38,8 +38,9 @@ pipeline {
             steps {
                 echo "Verifying Railway CLI installation..."
                 bat '''
+                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
                 railway --version
-                railway login --token=%RAILWAY_TOKEN%
+                railway login
                 '''
             }
         }
@@ -49,7 +50,8 @@ pipeline {
                 echo "Deploying application to Railway..."
                 dir('client-service/target') {
                     bat '''
-                    railway up --detach --token=%RAILWAY_TOKEN%
+                    set RAILWAY_TOKEN=%RAILWAY_TOKEN%
+                    railway up --detach
                     '''
                 }
             }
