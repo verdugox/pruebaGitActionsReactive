@@ -38,9 +38,10 @@ pipeline {
             steps {
                 echo "Installing Railway CLI..."
                 bat '''
-                curl -fsSL https://railway.app/install.sh -o install.bat
-                install.bat
-                set PATH=%PATH%;%USERPROFILE%\\.railway\\bin
+                curl -L -o railway.exe https://github.com/railwayapp/cli/releases/latest/download/railway-x86_64-pc-windows-msvc.exe
+                move railway.exe C:\\Tools\\railway.exe
+                set PATH=%PATH%;C:\\Tools
+                railway --version
                 railway login --token=%RAILWAY_TOKEN%
                 '''
             }
