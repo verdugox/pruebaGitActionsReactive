@@ -14,14 +14,14 @@ pipeline {
             steps {
                 echo "Preparing environment..."
                 checkout scm
-                bat "${MAVEN_HOME}/bin/mvn --version"
+                bat "${MAVEN_HOME}\\bin\\mvn --version"
             }
         }
 
         stage('Build') {
             steps {
                 dir('client-service') {
-                    bat "${MAVEN_HOME}/bin/mvn clean package -DskipTests"
+                    bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
                 }
             }
         }
@@ -37,9 +37,9 @@ pipeline {
         stage('Verify Railway CLI') {
             steps {
                 echo "Verifying Railway CLI installation..."
-                sh '''
+                bat '''
                 railway --version
-                railway login --token=${RAILWAY_TOKEN}
+                railway login --token=%RAILWAY_TOKEN%
                 '''
             }
         }
@@ -48,8 +48,8 @@ pipeline {
             steps {
                 echo "Deploying application to Railway..."
                 dir('client-service/target') {
-                    sh '''
-                    railway up --detach --token=${RAILWAY_TOKEN}
+                    bat '''
+                    railway up --detach --token=%RAILWAY_TOKEN%
                     '''
                 }
             }
