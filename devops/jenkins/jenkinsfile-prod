@@ -38,9 +38,7 @@ pipeline {
             steps {
                 echo "Verifying Railway CLI installation..."
                 bat '''
-                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
                 railway --version
-                railway login
                 '''
             }
         }
