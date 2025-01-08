@@ -50,7 +50,6 @@ pipeline {
                 echo "Deploying application to Railway..."
                 dir('client-service/target') {
                     sh '''
-                    railway init --detach
                     railway up --detach --token=${RAILWAY_TOKEN}
                     '''
                 }
