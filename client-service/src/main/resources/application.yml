@@ -4,7 +4,19 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/clientsdb  # URI simplificada para MongoDB
+#      uri: mongodb://localhost:27017/clientsdb  # URI simplificada para MongoDB
+      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb
+
+#  data:
+#    mongodb:
+#      host: sortec.rhyde.mongodb.net
+#      port: 27017
+#      username: verdugox123
+#      password: Aries1990
+#      database: clientsdb
+#      authentication-database: admin
+#      ssl: true
+
 
 server:
   port: 8086  # Cambié el puerto a 8087 como en tu 'dev-vars.yml'
