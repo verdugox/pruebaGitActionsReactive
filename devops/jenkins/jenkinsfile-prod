@@ -37,10 +37,11 @@ pipeline {
         stage('Install Railway CLI') {
             steps {
                 echo "Installing Railway CLI..."
-                sh '''
-                curl -fsSL https://railway.app/install.sh | sh
-                export PATH=$PATH:/root/.railway/bin
-                railway login --token=${RAILWAY_TOKEN}
+                bat '''
+                curl -fsSL https://railway.app/install.sh -o install.bat
+                install.bat
+                set PATH=%PATH%;%USERPROFILE%\\.railway\\bin
+                railway login --token=%RAILWAY_TOKEN%
                 '''
             }
         }
@@ -49,8 +50,9 @@ pipeline {
             steps {
                 echo "Deploying application to Railway..."
                 dir('client-service/target') {
-                    sh '''
-                    railway up --detach --token=${RAILWAY_TOKEN}
+                    bat '''
+                    railway init --detach
+                    railway up --detach --token=%RAILWAY_TOKEN%
                     '''
                 }
             }
