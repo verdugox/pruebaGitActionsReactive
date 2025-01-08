@@ -46,12 +46,9 @@ pipeline {
         stage('Deploy to Railway') {
             steps {
                 echo "Deploying application to Railway..."
-                dir('client-service/target') {
-                    bat '''
-                    set RAILWAY_TOKEN=%RAILWAY_TOKEN%
-                    railway up --detach
-                    '''
-                }
+                bat '''
+                C:\\Tools\\run_railway.bat
+                '''
             }
         }
     }
