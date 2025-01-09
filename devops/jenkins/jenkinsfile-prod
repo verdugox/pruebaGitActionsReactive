@@ -38,7 +38,7 @@ pipeline {
         stage('Convert JAR to Base64') {
             steps {
                 echo "Converting JAR to Base64..."
-                dir('client-service/target') { // Cambia al directorio donde está el JAR
+                dir('client-service/target') {
                     bat """
                     certutil -encode ${JAR_NAME} app.jar.base64
                     """
@@ -52,7 +52,11 @@ pipeline {
                 script {
                     def base64Content = readFile('client-service/target/app.jar.base64')
                     def yamlContent = readFile(CONFIG_FILE)
-                    def updatedYaml = yamlContent.replaceAll("app.jar: \\|\\n(\\s+).*", "app.jar: |\\n      ${base64Content}")
+                    // Reemplaza el contenido del ConfigMap con el nuevo contenido base64 del JAR
+                    def updatedYaml = yamlContent.replaceFirst(
+                        "(?s)(app\\.jar: \\|\\n).*?(\\n---)",
+                        "\$1    ${base64Content.trim().replaceAll('\n', '\n    ')}\$2"
+                    )
                     writeFile file: CONFIG_FILE, text: updatedYaml
                 }
             }

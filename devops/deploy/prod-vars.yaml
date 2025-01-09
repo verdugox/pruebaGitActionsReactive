@@ -37,7 +37,7 @@ metadata:
   name: springboot-app-configmap
 data:
   app.jar: |
-    # Este contenido será reemplazado automáticamente con el JAR en base64.
+    LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUU2VENDQXRHZ0F3SUJBZ0lSQUw4Z0xFU3ZaMjdUQy85SXFWYklWbk13RFFZSktvWklodmNOQVFFTEJRQXcK... # Contenido base64 completo del JAR
 ---
 apiVersion: v1
 kind: Service
