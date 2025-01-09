@@ -20,6 +20,7 @@ pipeline {
 
         stage('Build') {
             steps {
+                echo "Building Spring Boot JAR..."
                 dir('client-service') {
                     bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
                 }
@@ -28,6 +29,7 @@ pipeline {
 
         stage('Verify JAR File') {
             steps {
+                echo "Verifying JAR file..."
                 dir('client-service') {
                     bat "dir target"
                 }
@@ -37,9 +39,11 @@ pipeline {
         stage('Convert JAR to Base64') {
             steps {
                 echo "Converting JAR to Base64..."
-                bat """
-                certutil -encode target\\${JAR_NAME} app.jar.base64
-                """
+                dir('client-service/target') { // Cambia al directorio donde está el JAR
+                    bat """
+                    certutil -encode ${JAR_NAME} app.jar.base64
+                    """
+                }
             }
         }
 
@@ -47,10 +51,10 @@ pipeline {
             steps {
                 echo "Updating ConfigMap in prod-vars.yaml..."
                 script {
-                    def base64Content = readFile('app.jar.base64')
-                    def yamlContent = readFile('prod-vars.yaml')
+                    def base64Content = readFile('client-service/target/app.jar.base64')
+                    def yamlContent = readFile(CONFIG_FILE)
                     def updatedYaml = yamlContent.replaceAll("app.jar: \\|\\n(\\s+).*", "app.jar: |\\n      ${base64Content}")
-                    writeFile file: 'prod-vars.yaml', text: updatedYaml
+                    writeFile file: CONFIG_FILE, text: updatedYaml
                 }
             }
         }
@@ -61,7 +65,7 @@ pipeline {
                 writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
                 withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
                     bat """
-                    kubectl apply -f prod-vars.yaml
+                    kubectl apply -f ${CONFIG_FILE}
                     """
                 }
             }
@@ -70,9 +74,11 @@ pipeline {
         stage('Validate Pods') {
             steps {
                 echo "Validating AKS Pods..."
-                bat """
-                kubectl get pods
-                """
+                withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
+                    bat """
+                    kubectl get pods
+                    """
+                }
             }
         }
     }
