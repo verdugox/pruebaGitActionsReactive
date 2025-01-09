@@ -1,12 +1,52 @@
-server:
-  port: 8087
-
-spring:
-  data:
-    mongodb:
-      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb
-
-logging:
-  level:
-    root: INFO
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-app
+  labels:
+    app: springboot-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: springboot-app
+  template:
+    metadata:
+      labels:
+        app: springboot-app
+    spec:
+      containers:
+      - name: springboot-app
+        image: "openjdk:17-jdk-alpine" # Imagen base para ejecutar Java
+        command: ["java", "-jar", "/app/app.jar"]
+        volumeMounts:
+        - mountPath: "/app"
+          name: springboot-app-volume
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: SPRING_DATA_MONGODB_URI
+          value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb"
+      volumes:
+      - name: springboot-app-volume
+        configMap:
+          name: springboot-app-configmap
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: springboot-app-configmap
+data:
+  app.jar: |
+    # Este contenido será reemplazado automáticamente con el JAR en base64.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-app-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8087
+  selector:
+    app: springboot-app

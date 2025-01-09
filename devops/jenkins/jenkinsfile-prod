@@ -4,63 +4,74 @@ pipeline {
     environment {
         MAVEN_HOME = tool 'Maven 3.9.9'
         JAVA_HOME = tool 'JDK17'
-        RAILWAY_TOKEN = credentials('railway-token') // Token almacenado en Jenkins
-        DEPLOY_ENV = "prod"
-        CONFIG_FILE = "devops/deploy/prod-vars.yaml"
+        KUBECONFIG = credentials('kubeconfig') // Archivo kubeconfig cargado en Jenkins
+        JAR_NAME = "client-service-0.0.1-SNAPSHOT.jar"
     }
 
     stages {
-        stage('Preparation') {
+        stage('Checkout Code') {
             steps {
-                echo "Preparing environment..."
+                echo "Cloning repository..."
                 checkout scm
-                bat "${MAVEN_HOME}\\bin\\mvn --version"
             }
         }
 
-        stage('Build') {
+        stage('Build JAR') {
             steps {
-                dir('client-service') {
-                    bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
+                echo "Building Spring Boot JAR..."
+                bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
+            }
+        }
+
+        stage('Convert JAR to Base64') {
+            steps {
+                echo "Converting JAR to Base64..."
+                bat """
+                certutil -encode target\\${JAR_NAME} app.jar.base64
+                """
+            }
+        }
+
+        stage('Update ConfigMap') {
+            steps {
+                echo "Updating ConfigMap in prod-vars.yaml..."
+                script {
+                    def base64Content = readFile('app.jar.base64')
+                    def yamlContent = readFile('prod-vars.yaml')
+                    def updatedYaml = yamlContent.replaceAll("app.jar: \\|\\n(\\s+).*", "app.jar: |\\n      ${base64Content}")
+                    writeFile file: 'prod-vars.yaml', text: updatedYaml
                 }
             }
         }
 
-        stage('Verify JAR File') {
+        stage('Deploy to AKS') {
             steps {
-                dir('client-service') {
-                    bat "dir target"
+                echo "Deploying application to AKS..."
+                writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
+                withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
+                    bat """
+                    kubectl apply -f prod-vars.yaml
+                    """
                 }
             }
         }
 
-        stage('Verify Railway CLI') {
+        stage('Validate Pods') {
             steps {
-                echo "Verifying Railway CLI installation..."
-                bat '''
-                railway --version
-                '''
+                echo "Validating AKS Pods..."
+                bat """
+                kubectl get pods
+                """
             }
         }
-
-        stage('Deploy to Railway') {
-            steps {
-                echo "Deploying application to Railway..."
-                bat '''
-                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
-                railway up --detach
-                '''
-            }
-        }
-
     }
 
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo "Pipeline executed successfully!"
         }
         failure {
-            echo "Pipeline failed. Check the logs."
+            echo "Pipeline failed. Check logs for more details."
         }
     }
 }
