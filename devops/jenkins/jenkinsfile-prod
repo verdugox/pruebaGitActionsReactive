@@ -6,20 +6,31 @@ pipeline {
         JAVA_HOME = tool 'JDK17'
         KUBECONFIG = credentials('kubeconfig') // Archivo kubeconfig cargado en Jenkins
         JAR_NAME = "client-service-0.0.1-SNAPSHOT.jar"
+        CONFIG_FILE = "devops/deploy/prod-vars.yaml"
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Preparation') {
             steps {
-                echo "Cloning repository..."
+                echo "Preparing environment..."
                 checkout scm
+                bat "${MAVEN_HOME}\\bin\\mvn --version"
             }
         }
 
-        stage('Build JAR') {
+        stage('Build') {
             steps {
-                echo "Building Spring Boot JAR..."
-                bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
+                dir('client-service') {
+                    bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
+                }
+            }
+        }
+
+        stage('Verify JAR File') {
+            steps {
+                dir('client-service') {
+                    bat "dir target"
+                }
             }
         }
 
