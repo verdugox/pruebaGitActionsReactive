@@ -6,7 +6,7 @@ pipeline {
         JAVA_HOME = tool 'JDK17'
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_IMAGE = 'verdugox/springboot-app'
-        IMAGE_TAG = '1.0' // Cambia este valor según corresponda
+        IMAGE_TAG = '1.0'
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
     }
 
@@ -28,31 +28,24 @@ pipeline {
             }
         }
 
-        stage('Verify JAR File') {
-            steps {
-                echo "Verifying JAR file..."
-                dir('client-service') {
-                    bat "dir target"
-                }
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker Image..."
                 dir('client-service') {
-                    bat """
-                    docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} .
-                    docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-                    docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        bat """
+                        docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} .
+                        docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+                        docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}
+                        """
+                    }
                 }
             }
         }
 
         stage('Update Deployment YAML') {
             steps {
-                echo "Updating Deployment YAML with Docker Image..."
+                echo "Updating Deployment YAML..."
                 script {
                     def yamlContent = readFile(CONFIG_FILE)
                     def updatedYaml = yamlContent.replaceAll(
@@ -64,20 +57,9 @@ pipeline {
             }
         }
 
-        stage('Debug Kubeconfig') {
-            steps {
-                echo "Debugging Kubeconfig..."
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    bat """
-                    type ${KUBECONFIG_FILE}
-                    """
-                }
-            }
-        }
-
         stage('Deploy to AKS') {
             steps {
-                echo "Deploying application to AKS..."
+                echo "Deploying to AKS..."
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
                         bat """
@@ -88,9 +70,9 @@ pipeline {
             }
         }
 
-        stage('Validate Pods') {
+        stage('Validate Deployment') {
             steps {
-                echo "Validating AKS Pods..."
+                echo "Validating Deployment..."
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
                         bat """
