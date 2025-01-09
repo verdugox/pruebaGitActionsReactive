@@ -1,4 +1,5 @@
 {
+    "root": "client-service",
     "build": {
         "builder": "nixpacks",
         "plan": {
