@@ -4,7 +4,6 @@ pipeline {
     environment {
         MAVEN_HOME = tool 'Maven 3.9.9'
         JAVA_HOME = tool 'JDK17'
-        KUBECONFIG = credentials('kubeconfig') // Archivo kubeconfig cargado en Jenkins
         JAR_NAME = "client-service-0.0.1-SNAPSHOT.jar"
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
     }
@@ -59,14 +58,26 @@ pipeline {
             }
         }
 
+        stage('Debug Kubeconfig') {
+            steps {
+                echo "Debugging Kubeconfig..."
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    bat """
+                    type ${KUBECONFIG_FILE}
+                    """
+                }
+            }
+        }
+
         stage('Deploy to AKS') {
             steps {
                 echo "Deploying application to AKS..."
-                writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
-                withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
-                    bat """
-                    kubectl apply -f ${CONFIG_FILE}
-                    """
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
+                        bat """
+                        kubectl apply -f ${CONFIG_FILE}
+                        """
+                    }
                 }
             }
         }
@@ -74,10 +85,12 @@ pipeline {
         stage('Validate Pods') {
             steps {
                 echo "Validating AKS Pods..."
-                withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
-                    bat """
-                    kubectl get pods
-                    """
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
+                    withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
+                        bat """
+                        kubectl get pods
+                        """
+                    }
                 }
             }
         }
