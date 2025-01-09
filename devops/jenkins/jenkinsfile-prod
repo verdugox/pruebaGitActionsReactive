@@ -4,7 +4,9 @@ pipeline {
     environment {
         MAVEN_HOME = tool 'Maven 3.9.9'
         JAVA_HOME = tool 'JDK17'
-        JAR_NAME = "client-service-0.0.1-SNAPSHOT.jar"
+        DOCKER_REGISTRY = 'docker.io'
+        DOCKER_IMAGE = 'verdugox/springboot-app'
+        IMAGE_TAG = '1.0' // Cambia este valor según corresponda
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
     }
 
@@ -17,7 +19,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build JAR') {
             steps {
                 echo "Building Spring Boot JAR..."
                 dir('client-service') {
@@ -35,27 +37,27 @@ pipeline {
             }
         }
 
-        stage('Convert JAR to Base64') {
+        stage('Build Docker Image') {
             steps {
-                echo "Converting JAR to Base64..."
-                dir('client-service/target') {
+                echo "Building Docker Image..."
+                dir('client-service') {
                     bat """
-                    certutil -encode ${JAR_NAME} app.jar.base64
+                    docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} .
+                    docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+                    docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}
                     """
                 }
             }
         }
 
-        stage('Update ConfigMap') {
+        stage('Update Deployment YAML') {
             steps {
-                echo "Updating ConfigMap in prod-vars.yaml..."
+                echo "Updating Deployment YAML with Docker Image..."
                 script {
-                    def base64Content = readFile('client-service/target/app.jar.base64')
                     def yamlContent = readFile(CONFIG_FILE)
-                    // Reemplaza el contenido del ConfigMap con el nuevo contenido base64 del JAR
-                    def updatedYaml = yamlContent.replaceFirst(
-                        "(?s)(app\\.jar: \\|\\n).*?(\\n---)",
-                        "\$1    ${base64Content.trim().replaceAll('\n', '\n    ')}\$2"
+                    def updatedYaml = yamlContent.replaceAll(
+                        "image: .*",
+                        "image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
                     )
                     writeFile file: CONFIG_FILE, text: updatedYaml
                 }
@@ -92,7 +94,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
                         bat """
-                        kubectl get pods
+                        kubectl get pods -l app=springboot-app
                         """
                     }
                 }

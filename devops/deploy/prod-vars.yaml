@@ -16,28 +16,13 @@ spec:
     spec:
       containers:
       - name: springboot-app
-        image: "openjdk:17-jdk-alpine" # Imagen base para ejecutar Java
+        image: "verdugox/springboot-app:1.0" # Cambiar a la imagen de Docker Hub
         command: ["java", "-jar", "/app/app.jar"]
-        volumeMounts:
-        - mountPath: "/app"
-          name: springboot-app-volume
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "prod"
         - name: SPRING_DATA_MONGODB_URI
           value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb"
-      volumes:
-      - name: springboot-app-volume
-        configMap:
-          name: springboot-app-configmap
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: springboot-app-configmap
-data:
-  app.jar: |
-    LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUU2VENDQXRHZ0F3SUJBZ0lSQUw4Z0xFU3ZaMjdUQy85SXFWYklWbk13RFFZSktvWklodmNOQVFFTEJRQXcK... # Contenido base64 completo del JAR
 ---
 apiVersion: v1
 kind: Service
