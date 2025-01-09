@@ -4,9 +4,10 @@ pipeline {
     environment {
         MAVEN_HOME = tool 'Maven 3.9.9'
         JAVA_HOME = tool 'JDK17'
-        RAILWAY_TOKEN = credentials('railway-token') // Token almacenado en Jenkins
+        KUBECONFIG = credentials('kubeconfig') // Archivo kubeconfig cargado en Jenkins
         DEPLOY_ENV = "prod"
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
+        JAR_NAME = "client-service-0.0.1-SNAPSHOT.jar"
     }
 
     stages {
@@ -18,8 +19,9 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build JAR') {
             steps {
+                echo "Building Spring Boot JAR..."
                 dir('client-service') {
                     bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
                 }
@@ -28,31 +30,58 @@ pipeline {
 
         stage('Verify JAR File') {
             steps {
+                echo "Verifying JAR file..."
                 dir('client-service') {
                     bat "dir target"
                 }
             }
         }
 
-        stage('Verify Railway CLI') {
+        stage('Convert JAR to Base64') {
             steps {
-                echo "Verifying Railway CLI installation..."
-                bat '''
-                railway --version
-                '''
+                echo "Converting JAR to Base64..."
+                dir('client-service/target') {
+                    bat """
+                    certutil -encode ${JAR_NAME} app.jar.base64
+                    """
+                }
             }
         }
 
-        stage('Deploy to Railway') {
+        stage('Update ConfigMap') {
             steps {
-                echo "Deploying application to Railway..."
-                bat '''
-                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
-                railway up --detach
-                '''
+                echo "Updating ConfigMap in prod-vars.yaml..."
+                script {
+                    def base64Content = readFile('client-service/target/app.jar.base64')
+                    def yamlContent = readFile(CONFIG_FILE)
+                    def updatedYaml = yamlContent.replaceAll("app.jar: \\|\\n(\\s+).*", "app.jar: |\\n      ${base64Content}")
+                    writeFile file: CONFIG_FILE, text: updatedYaml
+                }
             }
         }
 
+        stage('Deploy to AKS') {
+            steps {
+                echo "Deploying application to AKS..."
+                writeFile file: 'kubeconfig', text: "${KUBECONFIG}"
+                withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
+                    bat """
+                    kubectl apply -f ${CONFIG_FILE}
+                    """
+                }
+            }
+        }
+
+        stage('Validate Pods') {
+            steps {
+                echo "Validating AKS Pods..."
+                withEnv(["KUBECONFIG=${WORKSPACE}/kubeconfig"]) {
+                    bat """
+                    kubectl get pods
+                    """
+                }
+            }
+        }
     }
 
     post {
