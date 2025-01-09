@@ -46,10 +46,12 @@ pipeline {
         stage('Deploy to Railway') {
             steps {
                 echo "Deploying application to Railway..."
-                bat '''
-                set RAILWAY_TOKEN=%RAILWAY_TOKEN%
-                railway up --detach
-                '''
+                dir('client-service') {
+                    bat '''
+                    set RAILWAY_TOKEN=%RAILWAY_TOKEN%
+                    railway up --detach --service=79b30efb-b800-4557-80f4-14250d335f83
+                    '''
+                }
             }
         }
     }
