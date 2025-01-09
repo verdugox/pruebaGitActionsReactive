@@ -1,9 +1,13 @@
 {
+
   "build": {
     "builder": "nixpacks",
     "plan": {
       "runtime": "java",
       "cmd": "java -jar target/client-service-0.0.1-SNAPSHOT.jar"
+
     }
+
   }
+
 }
