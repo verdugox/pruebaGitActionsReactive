@@ -4,7 +4,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb&appName=Sortec
+      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb&ssl=true
 
   ssl:
     enabled: true
