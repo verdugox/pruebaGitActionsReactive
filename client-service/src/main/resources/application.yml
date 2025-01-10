@@ -19,7 +19,7 @@ spring:
 
 
 server:
-  port: 8086  # Cambié el puerto a 8087 como en tu 'dev-vars.yml'
+  port: 8087  # Cambié el puerto a 8087 como en tu 'dev-vars.yml'
 
 logging:
   level:
