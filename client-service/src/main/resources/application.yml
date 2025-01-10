@@ -4,14 +4,18 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?retryWrites=true&w=majority&ssl=true
+      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb&appName=Sortec
+
   ssl:
     enabled: true
 
 server:
-  port: 8086  # Cambié el puerto a 8086 para alinearlo con tu configuración actual
+  port: 8086
+  ssl:
+    trust-store: classpath:truststore.jks
+    trust-store-password: Aries1990$ # Cambiar por la contraseña real usada en el truststore
 
 logging:
   level:
-    root: INFO  # Nivel de log global
-    org.mongodb.driver: DEBUG  # Logs detallados para MongoDB
+    root: INFO
+    org.mongodb.driver: DEBUG

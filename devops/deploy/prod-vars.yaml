@@ -16,17 +16,17 @@ spec:
     spec:
       containers:
       - name: springboot-app
-        image: "verdugox/springboot-app:1.0" # Cambiar a la imagen de Docker Hub
+        image: "verdugox/springboot-app:1.0"
         command: ["java", "-jar", "/app/app.jar"]
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "prod"
         - name: SPRING_DATA_MONGODB_URI
-          value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?retryWrites=true&w=majority&ssl=true"
-        - name: SPRING_DATA_MONGODB_SSL_ENABLED
-          value: "true"
-        ports:
-        - containerPort: 8086
+          value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?retryWrites=true&w=majority&appName=Sortec"
+        - name: SPRING_SERVER_SSL_TRUST_STORE
+          value: "classpath:truststore.jks"
+        - name: SPRING_SERVER_SSL_TRUST_STORE_PASSWORD
+          value: "Aries1990$" # Cambiar por la contraseña real usada en el truststore
 ---
 apiVersion: v1
 kind: Service
