@@ -22,9 +22,11 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: "prod"
         - name: SPRING_DATA_MONGODB_URI
-          value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?retryWrites=true&w=majority"
+          value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?retryWrites=true&w=majority&ssl=true"
         - name: SPRING_DATA_MONGODB_SSL_ENABLED
           value: "true"
+        ports:
+        - containerPort: 8086
 ---
 apiVersion: v1
 kind: Service
