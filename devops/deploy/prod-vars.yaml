@@ -32,6 +32,6 @@ spec:
   type: LoadBalancer
   ports:
   - port: 80
-    targetPort: 8087
+    targetPort: 8086
   selector:
     app: springboot-app
