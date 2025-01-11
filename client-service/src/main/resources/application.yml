@@ -1,13 +1,11 @@
 spring:
   application:
     name: client-service
-
   data:
     mongodb:
       uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true&retryWrites=true&w=majority
-
-#  ssl:
-#    enabled: true
+  ssl:
+    enabled: true
 
 server:
   port: 8086
