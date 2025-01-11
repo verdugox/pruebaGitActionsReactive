@@ -37,7 +37,20 @@ jobs:
           name: java-app
           path: './client-service/target/*.jar'
 
-      # 5. Mensaje final
+      # 5. Notificar a Jenkins para ejecutar el job
+      - name: Trigger Jenkins Job
+        run: |
+          curl -X POST "https//6abb-2800-200-f008-8204-5d9-d70d-1191-7bdc.ngrok-free.app/job/SORTEC-DOCKER-AKS/buildWithParameters" \
+          --user "<JENKINS_USER>:<JENKINS_API_TOKEN>" \
+          -d token=<JENKINS_JOB_TOKEN>
+        env:
+          JENKINS_SERVER_URL: ${{ secrets.JENKINS_SERVER_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          JENKINS_JOB_TOKEN: ${{ secrets.JENKINS_JOB_TOKEN }}
+          JOB_NAME: "springboot-deploy"
+
+      # 6. Mensaje final
       - name: Notify Success
         if: success()
-        run: echo "Build and tests completed successfully on 'develop' branch!"
+        run: echo "Build and tests completed successfully on 'develop' branch, Jenkins job triggered!"
