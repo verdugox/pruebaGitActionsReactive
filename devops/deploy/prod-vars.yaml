@@ -23,10 +23,6 @@ spec:
           value: "prod"
         - name: SPRING_DATA_MONGODB_URI
           value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?retryWrites=true&w=majority&ssl=true"
-        - name: SPRING_SERVER_SSL_TRUST_STORE
-          value: "classpath:truststore.jks"
-        - name: SPRING_SERVER_SSL_TRUST_STORE_PASSWORD
-          value: "Aries1990$" # Cambiar por la contraseña real usada en el truststore
 ---
 apiVersion: v1
 kind: Service

@@ -4,18 +4,20 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb&ssl=true
+      uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true
 
-  ssl:
-    enabled: true
+#  ssl:
+#    enabled: true
 
 server:
   port: 8086
-  ssl:
-    trust-store: classpath:truststore.jks
-    trust-store-password: Aries1990$ # Cambiar por la contraseña real usada en el truststore
 
 logging:
   level:
-    root: INFO
-    org.mongodb.driver: DEBUG
+    root: INFO              # Nivel de log global
+    org.mongodb.driver: DEBUG # Detalles de MongoDB (conexiones, consultas)
+    org.springframework.web: DEBUG # Peticiones HTTP entrantes y salientes
+    org.springframework.data: DEBUG # Interacciones con repositorios de datos
+    org.springframework.boot: INFO # Logs de inicialización de Spring Boot
+    reactor: DEBUG           # Logs del flujo reactivo
+
