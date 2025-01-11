@@ -28,28 +28,18 @@ jobs:
         run: |
           mvn clean install
 
-      # 4. Subir el archivo JAR como artefacto (actualizado a v3)
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
-        with:
-          name: java-app
-          path: './client-service/target/*.jar'
-
-      # 5. Notificar a Jenkins para ejecutar el job
+      # 4. Notificar a Jenkins para ejecutar el job
       - name: Trigger Jenkins Job
-        shell: pwsh  # Especificar PowerShell Core
         run: |
-          $jenkinsUrl = "https://6abb-2800-200-f008-8204-5d9-d70d-1191-7bdc.ngrok-free.app/job/SORTEC-DOCKER-AKS/buildWithParameters"
-          $auth = "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
-          $token = "${{ secrets.JENKINS_JOB_TOKEN }}"
-          Invoke-RestMethod -Uri "$jenkinsUrl?token=$token" -Method Post -Headers @{Authorization = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($auth)))"}
-
+          curl -X POST "https://6abb-2800-200-f008-8204-5d9-d70d-1191-7bdc.ngrok-free.app/job/SORTEC-DOCKER-AKS/buildWithParameters" \
+          --user "$JENKINS_USER:$JENKINS_API_TOKEN" \
+          -d token=$JENKINS_JOB_TOKEN
         env:
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
           JENKINS_JOB_TOKEN: ${{ secrets.JENKINS_JOB_TOKEN }}
 
-      # 6. Mensaje final
+      # 5. Mensaje final
       - name: Notify Success
         if: success()
         run: echo "Build and tests completed successfully on 'develop' branch, Jenkins job triggered!"
