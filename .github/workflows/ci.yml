@@ -32,11 +32,12 @@ jobs:
       - name: Trigger Jenkins Job
         shell: pwsh  # Usar PowerShell en este paso
         run: |
-          $jenkinsUrl = "https://6abb-2800-200-f008-8204-5d9-d70d-1191-7bdc.ngrok-free.app/job/SORTEC-DOCKER-AKS/buildWithParameters"
+          $jenkinsUrl = "${{ secrets.JENKINS_URL_SORTEC_DOCKER_AKS }}"
           $user = "${{ secrets.JENKINS_USER }}"
           $token = "${{ secrets.JENKINS_API_TOKEN }}"
           $jobToken = "${{ secrets.JENKINS_JOB_TOKEN }}"
-          Invoke-RestMethod -Uri "$jenkinsUrl?token=$jobToken" -Method Post -Headers @{Authorization = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$user:$token")))"}
+          $authHeader = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${user}:${token}")))"
+          Invoke-RestMethod -Uri "$jenkinsUrl?token=$jobToken" -Method Post -Headers @{Authorization = $authHeader}
 
       # 5. Mensaje final
       - name: Notify Success
