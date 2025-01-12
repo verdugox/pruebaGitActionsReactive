@@ -38,7 +38,12 @@ jobs:
           $token = "${{ secrets.JENKINS_API_TOKEN }}"
           $jobToken = "${{ secrets.JENKINS_JOB_TOKEN }}"
           
-          # Validación de la URL
+          # Validación y limpieza de la URL
+          if (-not $jenkinsUrl -or $jenkinsUrl -match '\s') {
+              Write-Error "La URL de Jenkins no es válida: $jenkinsUrl"
+              exit 1
+          }
+
           $authHeader = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${user}:${token}")))"
           $fullUri = "$jenkinsUrl?token=$jobToken"
           
@@ -47,7 +52,13 @@ jobs:
           Write-Host "Authorization Header: $authHeader"  # Nota: No imprimir en producción
 
           # Realizar la solicitud a Jenkins
-          Invoke-RestMethod -Uri $fullUri -Method Post -Headers @{Authorization = $authHeader}
+          try {
+              Invoke-RestMethod -Uri $fullUri -Method Post -Headers @{Authorization = $authHeader}
+              Write-Host "Solicitud enviada correctamente a Jenkins."
+          } catch {
+              Write-Error "Error al enviar la solicitud a Jenkins: $_"
+              exit 1
+          }
 
       # 5. Mensaje final
       - name: Notify Success
