@@ -30,41 +30,15 @@ jobs:
 
       # 4. Notificar a Jenkins para ejecutar el job
       - name: Trigger Jenkins Job
-        shell: pwsh  # Usar PowerShell en este paso
         run: |
-          # Configuración de variables
-          $jenkinsUrl = "${{ secrets.JENKINS_URL }}"  # Usar secreto para la URL de Jenkins
-          $user = "${{ secrets.JENKINS_USER }}"
-          $token = "${{ secrets.JENKINS_API_TOKEN }}"
-          $jobToken = "${{ secrets.JENKINS_JOB_TOKEN }}"
-          
-          # Validación y limpieza de la URL
-          if ([string]::IsNullOrWhiteSpace($jenkinsUrl)) {
-              Write-Error "La URL de Jenkins no está configurada o contiene espacios en blanco."
-              exit 1
-          }
-          
-          if (-not $jenkinsUrl.StartsWith("https://")) {
-              Write-Error "La URL de Jenkins debe comenzar con 'https://': $jenkinsUrl"
-              exit 1
-          }
-          
-          # Construcción de la URI completa
-          $authHeader = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${user}:${token}")))"
-          $fullUri = "$jenkinsUrl?token=$jobToken"
-          
-          # Imprimir detalles para depuración
-          Write-Host "Full Jenkins URI: $($fullUri)"
-          Write-Host "Authorization Header (censurado para seguridad)."
-          
-          # Realizar la solicitud a Jenkins
-          try {
-              Invoke-RestMethod -Uri $fullUri -Method Post -Headers @{Authorization = $authHeader}
-              Write-Host "Solicitud enviada correctamente a Jenkins."
-          } catch {
-              Write-Error "Error al enviar la solicitud a Jenkins: $_"
-              exit 1
-          }
+          echo "Triggering Jenkins Job..."
+          curl -X POST "${{ secrets.JENKINS_URL }}?token=${{ secrets.JENKINS_JOB_TOKEN }}" \
+          --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          JENKINS_JOB_TOKEN: ${{ secrets.JENKINS_JOB_TOKEN }}
 
       # 5. Mensaje final
       - name: Notify Success
