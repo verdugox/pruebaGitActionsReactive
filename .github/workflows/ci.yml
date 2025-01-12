@@ -32,7 +32,7 @@ jobs:
       - name: Trigger Jenkins Job
         shell: pwsh  # Usar PowerShell en este paso
         run: |
-          $jenkinsUrl = "${{ secrets.JENKINS_URL_SORTEC_DOCKER_AKS }}"
+          $jenkinsUrl = "https://6abb-2800-200-f008-8204-5d9-d70d-1191-7bdc.ngrok-free.app/job/SORTEC-DOCKER-AKS/buildWithParameters"
           $user = "${{ secrets.JENKINS_USER }}"
           $token = "${{ secrets.JENKINS_API_TOKEN }}"
           $jobToken = "${{ secrets.JENKINS_JOB_TOKEN }}"
