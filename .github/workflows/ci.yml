@@ -33,7 +33,7 @@ jobs:
         shell: pwsh  # Usar PowerShell en este paso
         run: |
           # Configuración de variables
-          $jenkinsUrl = "https://6abb-2800-200-f008-8204-5d9-d70d-1191-7bdc.ngrok-free.app/job/SORTEC-DOCKER-AKS/buildWithParameters"
+          $jenkinsUrl = "${{ secrets.JENKINS_URL }}"  # Usar secreto para la URL de Jenkins
           $user = "${{ secrets.JENKINS_USER }}"
           $token = "${{ secrets.JENKINS_API_TOKEN }}"
           $jobToken = "${{ secrets.JENKINS_JOB_TOKEN }}"
@@ -43,7 +43,7 @@ jobs:
           $fullUri = "$jenkinsUrl?token=$jobToken"
           
           # Imprimir detalles para depuración
-          Write-Host "Full Jenkins URI: $fullUri"
+          Write-Host "Full Jenkins URI: $($fullUri)"
           Write-Host "Authorization Header: $authHeader"  # Nota: No imprimir en producción
 
           # Realizar la solicitud a Jenkins
