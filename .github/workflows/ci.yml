@@ -37,6 +37,8 @@ jobs:
           $token = "${{ secrets.JENKINS_API_TOKEN }}"
           $jobToken = "${{ secrets.JENKINS_JOB_TOKEN }}"
           $authHeader = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${user}:${token}")))"
+          Write-Host "Using Jenkins URL: $jenkinsUrl"  # Imprimir la URL para validar
+          Write-Host "Authorization Header: $authHeader"  # (Opcional) Solo para depuración, no usar en producción
           Invoke-RestMethod -Uri "$jenkinsUrl?token=$jobToken" -Method Post -Headers @{Authorization = $authHeader}
 
       # 5. Mensaje final
