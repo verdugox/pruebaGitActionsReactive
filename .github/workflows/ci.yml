@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: windows-latest  # Sistema operativo Windows
+    runs-on: ubuntu-latest  # Cambiar a Ubuntu para evitar problemas con PowerShell
 
     steps:
       # 1. Descargar el código fuente
@@ -30,6 +30,7 @@ jobs:
 
       # 4. Notificar a Jenkins para ejecutar el job
       - name: Trigger Jenkins Job
+        shell: bash  # Usar bash como shell
         run: |
           echo "Triggering Jenkins Job..."
           curl -X POST "${{ secrets.JENKINS_URL }}?token=${{ secrets.JENKINS_JOB_TOKEN }}" \
