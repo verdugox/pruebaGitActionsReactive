@@ -8,6 +8,7 @@ pipeline {
         DOCKER_IMAGE = 'verdugox/springboot-app'
         IMAGE_TAG = '1.0'
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
+        ARTIFACTORY_SERVER_ID = 'ArtifactoryServer' // Nombre configurado en Jenkins
     }
 
     stages {
@@ -24,6 +25,21 @@ pipeline {
                 echo "Building Spring Boot JAR..."
                 dir('client-service') {
                     bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
+                }
+            }
+        }
+
+        stage('Deploy to JFrog Artifactory') {
+            steps {
+                echo "Deploying artifact to JFrog Artifactory..."
+                dir('client-service') {
+                    rtMavenRun(
+                        serverId: "${ARTIFACTORY_SERVER_ID}",
+                        goals: 'deploy',
+                        pom: 'pom.xml',
+                        resolverId: 'maven-resolver',
+                        deployerId: 'maven-deployer'
+                    )
                 }
             }
         }
