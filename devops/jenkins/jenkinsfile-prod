@@ -33,12 +33,9 @@ pipeline {
             steps {
                 echo "Deploying artifact to JFrog Artifactory..."
                 dir('client-service') {
-                    script {
-                        def rtMaven = Artifactory.newMavenBuild()
-                        rtMaven.resolver serverId: "${ARTIFACTORY_SERVER_ID}", releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot'
-                        rtMaven.deployer serverId: "${ARTIFACTORY_SERVER_ID}", releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot'
-                        rtMaven.run pom: 'pom.xml', goals: 'clean install deploy'
-                    }
+                    bat """
+                    ${MAVEN_HOME}\\bin\\mvn deploy -s ${WORKSPACE}\\settings.xml
+                    """
                 }
             }
         }
@@ -46,8 +43,8 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube Analysis..."
-                withSonarQubeEnv('SonarQube') { // Nombre configurado en Jenkins
-                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) { // Token configurado en Jenkins
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                         dir('client-service') {
                             bat """
                             ${MAVEN_HOME}\\bin\\mvn sonar:sonar ^
