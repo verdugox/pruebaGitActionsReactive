@@ -9,6 +9,9 @@ pipeline {
         IMAGE_TAG = '1.0'
         CONFIG_FILE = "devops/deploy/prod-vars.yaml"
         ARTIFACTORY_SERVER_ID = 'ArtifactoryServer' // Nombre configurado en Jenkins
+        FORTIFY_CREDENTIALS_ID = 'fortify-credentials'
+        FORTIFY_APP_NAME = 'client-service'
+        FORTIFY_PROJECT_VERSION = '1.0'
     }
 
     stages {
@@ -59,6 +62,25 @@ pipeline {
                 }
             }
         }
+
+        stage('Fortify Analysis') {
+            steps {
+                echo "Running Fortify on Demand Analysis..."
+                withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
+                    dir('client-service') {
+                        bat """
+                        ${MAVEN_HOME}\\bin\\mvn com.fortify.sca.plugins.maven:sca-maven-plugin:scan ^
+                            -Dfortify.sca.app=${FORTIFY_APP_NAME} ^
+                            -Dfortify.sca.version=${FORTIFY_PROJECT_VERSION} ^
+                            -Dfortify.sca.tenant=${FOD_USERNAME} ^
+                            -Dfortify.sca.password=${FOD_PASSWORD} ^
+                            -Dfortify.sca.upload=true
+                        """
+                    }
+                }
+            }
+        }
+
 
         stage('Build Docker Image') {
             steps {
