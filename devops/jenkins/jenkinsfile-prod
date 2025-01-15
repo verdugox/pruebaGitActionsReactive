@@ -33,13 +33,12 @@ pipeline {
             steps {
                 echo "Deploying artifact to JFrog Artifactory..."
                 dir('client-service') {
-                    rtMavenRun(
-                        serverId: "${ARTIFACTORY_SERVER_ID}",
-                        goals: 'deploy',
-                        pom: 'pom.xml',
-                        resolverId: 'maven-resolver',
-                        deployerId: 'maven-deployer'
-                    )
+                    script {
+                        def rtMaven = Artifactory.newMavenBuild()
+                        rtMaven.resolver serverId: "${ARTIFACTORY_SERVER_ID}", releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot'
+                        rtMaven.deployer serverId: "${ARTIFACTORY_SERVER_ID}", releaseRepo: 'libs-release', snapshotRepo: 'libs-snapshot'
+                        rtMaven.run pom: 'pom.xml', goals: 'clean install deploy'
+                    }
                 }
             }
         }
@@ -123,9 +122,15 @@ pipeline {
     post {
         success {
             echo "Pipeline executed successfully!"
+            mail to: 'luisandresverdugox@gmail.com',
+                 subject: 'Pipeline Success: Deployment Completed',
+                 body: "The pipeline execution was successful!\n\nDetails:\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nStatus: SUCCESS\n\nCheck the console output at ${env.BUILD_URL} for more details."
         }
         failure {
             echo "Pipeline failed. Check logs for more details."
+            mail to: 'luisandresverdugox@gmail.com',
+                 subject: 'Pipeline Failed: Error in Deployment',
+                 body: "The pipeline execution failed.\n\nDetails:\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nStatus: FAILURE\n\nCheck the console output at ${env.BUILD_URL} for more details."
         }
     }
 }
