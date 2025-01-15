@@ -2,14 +2,19 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
-      <option name="id" value="libs-release-local" />
-      <option name="name" value="libs-release-local" />
-      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-release-local" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="libs-virtual" />
       <option name="name" value="libs-virtual" />
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="central" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="libs-release-local" />
+      <option name="name" value="libs-release-local" />
+      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-release-local" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
@@ -22,8 +27,18 @@
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="fortify-releases" />
+      <option name="name" value="fortify-releases" />
+      <option name="url" value="https://repository.fortify.com/releases" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="snapshots" />
       <option name="name" value="libs-virtual" />
+      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jfrog-libs-virtual" />
+      <option name="name" value="jfrog-libs-virtual" />
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
     </remote-repository>
     <remote-repository>
