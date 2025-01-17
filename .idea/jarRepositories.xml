@@ -2,16 +2,6 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
-      <option name="id" value="libs-virtual" />
-      <option name="name" value="libs-virtual" />
-      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="central" />
-      <option name="name" value="central" />
-      <option name="url" value="https://repo.maven.apache.org/maven2" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="libs-release-local" />
       <option name="name" value="libs-release-local" />
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-release-local" />
@@ -32,11 +22,6 @@
       <option name="url" value="https://repository.fortify.com/releases" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="snapshots" />
-      <option name="name" value="libs-virtual" />
-      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="jfrog-libs-virtual" />
       <option name="name" value="jfrog-libs-virtual" />
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
@@ -47,19 +32,44 @@
       <option name="url" value="https://repo1.maven.org/maven2" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="jboss.community" />
-      <option name="name" value="JBoss Community repository" />
-      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="libs-snapshot" />
       <option name="name" value="libs-snapshot" />
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-snapshot" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="fortify" />
+      <option name="name" value="fortify" />
+      <option name="url" value="https://software.microfocus.com/software/enterprise-security" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="libs-virtual" />
+      <option name="name" value="libs-virtual" />
+      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="central" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="snapshots" />
+      <option name="name" value="libs-virtual" />
+      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-virtual" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="snapshot-repo" />
       <option name="name" value="snapshot-repo" />
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-snapshot" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="fortify-releases" />
+      <option name="name" value="fortify-releases" />
+      <option name="url" value="https://repo.microfocus.com/public" />
     </remote-repository>
   </component>
 </project>

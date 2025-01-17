@@ -101,5 +101,15 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
+        <repository>
+            <id>fortify</id>
+            <url>https://software.microfocus.com/software/enterprise-security</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
     </repositories>
 </project>
