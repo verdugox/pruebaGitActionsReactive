@@ -12,7 +12,8 @@ pipeline {
         FORTIFY_CREDENTIALS_ID = 'fortify-credentials'
         FORTIFY_APP_NAME = 'client-service'
         FORTIFY_PROJECT_VERSION = '1.0'
-        FORTIFY_URL = 'https://trial.fortify.com/' // URL de Fortify on Demand
+        FORTIFY_URL = 'https://trial.fortify.com/'
+        JFROG_CREDENTIALS_ID = 'jfrog-credentials' // Nueva credencial para JFrog
     }
 
     stages {
@@ -36,10 +37,14 @@ pipeline {
         stage('Deploy to JFrog Artifactory') {
             steps {
                 echo "Deploying artifact to JFrog Artifactory..."
-                dir('client-service') {
-                    bat """
-                    ${MAVEN_HOME}\\bin\\mvn deploy -s ${WORKSPACE}\\settings.xml
-                    """
+                withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
+                    dir('client-service') {
+                        bat """
+                        ${MAVEN_HOME}\\bin\\mvn deploy -s ${WORKSPACE}\\settings.xml \\
+                            -Dartifactory.username=%JFROG_USER% \\
+                            -Dartifactory.password=%JFROG_PASSWORD%
+                        """
+                    }
                 }
             }
         }
@@ -51,11 +56,11 @@ pipeline {
                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                         dir('client-service') {
                             bat """
-                            ${MAVEN_HOME}\\bin\\mvn sonar:sonar ^
-                                -Dsonar.projectKey=client-service ^
-                                -Dsonar.host.url=http://localhost:9000 ^
-                                -Dsonar.login=%SONAR_TOKEN% ^
-                                -Dsonar.sources=src/main/java ^
+                            ${MAVEN_HOME}\\bin\\mvn sonar:sonar \\
+                                -Dsonar.projectKey=client-service \\
+                                -Dsonar.host.url=http://localhost:9000 \\
+                                -Dsonar.login=%SONAR_TOKEN% \\
+                                -Dsonar.sources=src/main/java \\
                                 -Dsonar.java.binaries=target/classes
                             """
                         }
@@ -70,12 +75,13 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
                     dir('client-service') {
                         bat """
-                        ${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:spec ^
-                            -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} ^
-                            -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} ^
-                            -Dfortify.cloudscan.url=${FORTIFY_URL} ^
-                            -Dfortify.cloudscan.auth.username=%FOD_USERNAME% ^
-                            -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% ^
+                        ${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:spec \\
+                            -s ${WORKSPACE}\\settings.xml \\
+                            -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} \\
+                            -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} \\
+                            -Dfortify.cloudscan.url=${FORTIFY_URL} \\
+                            -Dfortify.cloudscan.auth.username=%FOD_USERNAME% \\
+                            -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% \\
                             -Dfortify.cloudscan.upload=true
                         """
                     }
