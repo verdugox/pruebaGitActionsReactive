@@ -1,19 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
+
     <groupId>com.example</groupId>
     <artifactId>client-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>client-service</name>
     <description>Pruebas de Microservicios para conectar GIT Actions y Jenkins</description>
+
+    <distributionManagement>
+        <repository>
+            <id>libs-virtual</id>
+            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -32,7 +42,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
-            <optional>true</optional>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -46,9 +56,43 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.fortify.cloudscan.plugins.maven</groupId>
+                <artifactId>project-spec-maven-plugin</artifactId>
+                <version>24.2.0.0050</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.fortify.cloudscan</groupId>
+                        <artifactId>project-packager</artifactId>
+                        <version>24.2.0.0050</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.maven</groupId>
+                        <artifactId>maven-core</artifactId>
+                        <version>3.9.6</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.maven</groupId>
+                        <artifactId>maven-plugin-api</artifactId>
+                        <version>3.9.6</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
     <repositories>
         <repository>
-            <id>jfrog-libs-virtual</id>
+            <id>libs-virtual</id>
             <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
             <snapshots>
                 <enabled>true</enabled>
@@ -58,47 +102,4 @@
             </releases>
         </repository>
     </repositories>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.3</version>
-                <configuration>
-                    <altDeploymentRepository>libs-virtual::https://trial1d22qj.jfrog.io/artifactory/libs-virtual</altDeploymentRepository>
-                    <retryFailedDeploymentCount>3</retryFailedDeploymentCount>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-    <distributionManagement>
-        <repository>
-            <id>libs-virtual</id>
-            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
-        </repository>
-        <snapshotRepository>
-            <id>libs-virtual</id>
-            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

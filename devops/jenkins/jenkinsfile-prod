@@ -12,6 +12,7 @@ pipeline {
         FORTIFY_CREDENTIALS_ID = 'fortify-credentials'
         FORTIFY_APP_NAME = 'client-service'
         FORTIFY_PROJECT_VERSION = '1.0'
+        FORTIFY_URL = 'https://trial.fortify.com/' // URL de Fortify on Demand
     }
 
     stages {
@@ -63,17 +64,19 @@ pipeline {
             }
         }
 
-        stage('Fortify Analysis') {
+        stage('Fortify on Demand Analysis') {
             steps {
                 echo "Running Fortify on Demand Analysis..."
                 withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
                     dir('client-service') {
                         bat """
-                        ${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:scan ^
-                            -s ${WORKSPACE}\\settings.xml ^
-                            -Dfortify.app.name=${FORTIFY_APP_NAME} ^
-                            -Dfortify.app.version=${FORTIFY_PROJECT_VERSION} ^
-                            -Dfortify.upload=true
+                        ${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:spec ^
+                            -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} ^
+                            -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} ^
+                            -Dfortify.cloudscan.url=${FORTIFY_URL} ^
+                            -Dfortify.cloudscan.auth.username=%FOD_USERNAME% ^
+                            -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% ^
+                            -Dfortify.cloudscan.upload=true
                         """
                     }
                 }
