@@ -39,11 +39,7 @@ pipeline {
                 echo "Deploying artifact to JFrog Artifactory..."
                 withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
                     dir('client-service') {
-                        bat """
-                        ${MAVEN_HOME}\\bin\\mvn deploy -s ${WORKSPACE}\\settings.xml \\
-                            -Dartifactory.username=%JFROG_USER% \\
-                            -Dartifactory.password=%JFROG_PASSWORD%
-                        """
+                        bat "${MAVEN_HOME}\\bin\\mvn deploy -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD%"
                     }
                 }
             }
@@ -55,14 +51,7 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                         dir('client-service') {
-                            bat """
-                            ${MAVEN_HOME}\\bin\\mvn sonar:sonar \\
-                                -Dsonar.projectKey=client-service \\
-                                -Dsonar.host.url=http://localhost:9000 \\
-                                -Dsonar.login=%SONAR_TOKEN% \\
-                                -Dsonar.sources=src/main/java \\
-                                -Dsonar.java.binaries=target/classes
-                            """
+                            bat "${MAVEN_HOME}\\bin\\mvn sonar:sonar -Dsonar.projectKey=client-service -Dsonar.host.url=http://localhost:9000 -Dsonar.login=%SONAR_TOKEN% -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes"
                         }
                     }
                 }
@@ -73,17 +62,10 @@ pipeline {
             steps {
                 echo "Running Fortify on Demand Analysis..."
                 withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
-                    dir('client-service') {
-                        bat """
-                        ${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:spec \\
-                            -s ${WORKSPACE}\\settings.xml \\
-                            -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} \\
-                            -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} \\
-                            -Dfortify.cloudscan.url=${FORTIFY_URL} \\
-                            -Dfortify.cloudscan.auth.username=%FOD_USERNAME% \\
-                            -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% \\
-                            -Dfortify.cloudscan.upload=true
-                        """
+                    withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
+                        dir('client-service') {
+                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:spec -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD% -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true"
+                        }
                     }
                 }
             }
@@ -94,11 +76,7 @@ pipeline {
                 echo "Building Docker Image..."
                 dir('client-service') {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat """
-                        docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} .
-                        docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-                        docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}
-                        """
+                        bat "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} . && docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} && docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
                     }
                 }
             }
@@ -109,10 +87,7 @@ pipeline {
                 echo "Updating Deployment YAML..."
                 script {
                     def yamlContent = readFile(CONFIG_FILE)
-                    def updatedYaml = yamlContent.replaceAll(
-                        "image: .*",
-                        "image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
-                    )
+                    def updatedYaml = yamlContent.replaceAll("image: .*", "image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}")
                     writeFile file: CONFIG_FILE, text: updatedYaml
                 }
             }
@@ -123,9 +98,7 @@ pipeline {
                 echo "Deploying to AKS..."
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
-                        bat """
-                        kubectl apply -f ${CONFIG_FILE}
-                        """
+                        bat "kubectl apply -f ${CONFIG_FILE}"
                     }
                 }
             }
@@ -136,9 +109,7 @@ pipeline {
                 echo "Validating Deployment..."
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
                     withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
-                        bat """
-                        kubectl get pods -l app=springboot-app
-                        """
+                        bat "kubectl get pods -l app=springboot-app"
                     }
                 }
             }
