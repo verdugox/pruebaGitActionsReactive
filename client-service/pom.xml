@@ -18,13 +18,6 @@
     <name>client-service</name>
     <description>Pruebas de Microservicios para conectar GIT Actions y Jenkins</description>
 
-    <distributionManagement>
-        <repository>
-            <id>virtual-release</id>
-            <url>https://trial1d22qj.jfrog.io/artifactory/libs-release</url>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
         <!-- Spring Boot Dependencies -->
         <dependency>
@@ -72,7 +65,7 @@
                 <version>24.2.0.0050</version>
                 <dependencies>
                     <dependency>
-                        <groupId>project-packager</groupId>
+                        <groupId>com.fortify.cloudscan</groupId>
                         <artifactId>project-packager</artifactId>
                         <version>24.2.0.0050</version>
                         <scope>runtime</scope>
@@ -96,7 +89,7 @@
 
     <repositories>
         <repository>
-            <id>virtual-release</id>
+            <id>libs-virtual</id>
             <url>https://trial1d22qj.jfrog.io/artifactory/libs-release</url>
             <snapshots>
                 <enabled>true</enabled>
@@ -106,4 +99,16 @@
             </releases>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>libs-virtual</id>
+            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
+        </repository>
+        <snapshotRepository>
+            <id>libs-virtual</id>
+            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
