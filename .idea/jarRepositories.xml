@@ -67,6 +67,11 @@
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-snapshot" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="virtual-release" />
+      <option name="name" value="virtual-release" />
+      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-release" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="fortify-releases" />
       <option name="name" value="fortify-releases" />
       <option name="url" value="https://repo.microfocus.com/public" />

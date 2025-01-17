@@ -20,13 +20,13 @@
 
     <distributionManagement>
         <repository>
-            <id>libs-virtual</id>
-            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
+            <id>virtual-release</id>
+            <url>https://trial1d22qj.jfrog.io/artifactory/libs-release</url>
         </repository>
     </distributionManagement>
 
     <dependencies>
-        <!-- Dependencias de Spring Boot -->
+        <!-- Spring Boot Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -44,11 +44,10 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.20</version>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Dependencias para testing -->
+        <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -58,13 +57,6 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- Gson (corregido a una versión estable con `JsonParseException`) -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.11.0</version>
         </dependency>
     </dependencies>
 
@@ -79,9 +71,8 @@
                 <artifactId>project-spec-maven-plugin</artifactId>
                 <version>24.2.0.0050</version>
                 <dependencies>
-                    <!-- Corregido el groupId de project-packager -->
                     <dependency>
-                        <groupId>com.fortify.cloudscan</groupId>
+                        <groupId>project-packager</groupId>
                         <artifactId>project-packager</artifactId>
                         <version>24.2.0.0050</version>
                         <scope>runtime</scope>
@@ -105,8 +96,8 @@
 
     <repositories>
         <repository>
-            <id>libs-virtual</id>
-            <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
+            <id>virtual-release</id>
+            <url>https://trial1d22qj.jfrog.io/artifactory/libs-release</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>

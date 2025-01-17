@@ -13,7 +13,7 @@ pipeline {
         FORTIFY_APP_NAME = 'client-service'
         FORTIFY_PROJECT_VERSION = '1.0'
         FORTIFY_URL = 'https://trial.fortify.com/'
-        JFROG_CREDENTIALS_ID = 'jfrog-credentials' // Nueva credencial para JFrog
+        JFROG_CREDENTIALS_ID = 'jfrog-credentials'
     }
 
     stages {
@@ -64,7 +64,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
                     withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
                         dir('client-service') {
-                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:spec -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD% -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true"
+                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD% -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true"
                         }
                     }
                 }
@@ -76,7 +76,9 @@ pipeline {
                 echo "Building Docker Image..."
                 dir('client-service') {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        bat "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} . && docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD} && docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
+                        bat "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} ."
+                        bat "docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                        bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
                     }
                 }
             }
