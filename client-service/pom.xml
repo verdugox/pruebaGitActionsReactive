@@ -26,6 +26,7 @@
     </distributionManagement>
 
     <dependencies>
+        <!-- Dependencias de Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -38,12 +39,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Dependencias para testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -54,6 +59,8 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Gson (corregido a una versión estable con `JsonParseException`) -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -72,6 +79,7 @@
                 <artifactId>project-spec-maven-plugin</artifactId>
                 <version>24.2.0.0050</version>
                 <dependencies>
+                    <!-- Corregido el groupId de project-packager -->
                     <dependency>
                         <groupId>com.fortify.cloudscan</groupId>
                         <artifactId>project-packager</artifactId>
