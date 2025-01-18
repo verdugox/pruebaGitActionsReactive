@@ -110,5 +110,4 @@
             <url>https://trial1d22qj.jfrog.io/artifactory/libs-virtual</url>
         </snapshotRepository>
     </distributionManagement>
-
 </project>
