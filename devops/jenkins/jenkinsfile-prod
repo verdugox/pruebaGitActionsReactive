@@ -72,7 +72,9 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
                         dir('client-service') {
                             bat "${MAVEN_HOME}\\bin\\mvn clean install -U -s ${WORKSPACE}\\settings.xml"
-                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD% -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true"
+                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.generate.spec=true"
+                            bat "if exist cs-spec.json echo 'cs-spec.json file generated successfully' || echo 'ERROR: cs-spec.json not found!'"
+                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true"
                         }
                     }
                 }
@@ -87,39 +89,6 @@ pipeline {
                         bat "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG} ."
                         bat "docker login ${DOCKER_REGISTRY} -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                         bat "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
-                    }
-                }
-            }
-        }
-
-        stage('Update Deployment YAML') {
-            steps {
-                echo "Updating Deployment YAML..."
-                script {
-                    def yamlContent = readFile(CONFIG_FILE)
-                    def updatedYaml = yamlContent.replaceAll("image: .*", "image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}")
-                    writeFile file: CONFIG_FILE, text: updatedYaml
-                }
-            }
-        }
-
-        stage('Deploy to AKS') {
-            steps {
-                echo "Deploying to AKS..."
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
-                        bat "kubectl apply -f ${CONFIG_FILE}"
-                    }
-                }
-            }
-        }
-
-        stage('Validate Deployment') {
-            steps {
-                echo "Validating Deployment..."
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    withEnv(["KUBECONFIG=${KUBECONFIG_FILE}"]) {
-                        bat "kubectl get pods -l app=springboot-app"
                     }
                 }
             }
