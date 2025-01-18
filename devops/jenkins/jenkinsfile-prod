@@ -71,7 +71,7 @@ pipeline {
                 withCredentials([
                     usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD'),
                     usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD'),
-                    string(credentialsId: 'fortify-token2', variable: 'FORTIFY_TOKEN') // Se cambia el ID de la credencial
+                    string(credentialsId: 'fortify-token2', variable: 'FORTIFY_TOKEN')
                 ]) {
                     dir('client-service') {
                         bat "${MAVEN_HOME}\\bin\\mvn clean install -U -s ${WORKSPACE}\\settings.xml"
@@ -80,6 +80,13 @@ pipeline {
                         bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.token=%FORTIFY_TOKEN% -Dfortify.cloudscan.upload=true -Dfortify.cloudscan.startScan=true"
                     }
                 }
+            }
+        }
+
+        stage('Post-build Actions: Fortify on Demand Static Assessment') {
+            steps {
+                echo "Executing Fortify on Demand Post-build Action..."
+                bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.token=%FORTIFY_TOKEN% -Dfortify.cloudscan.upload=true -Dfortify.cloudscan.startScan=true"
             }
         }
 
