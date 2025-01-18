@@ -17,6 +17,13 @@ pipeline {
     }
 
     stages {
+        stage('Clean Maven Repository') {
+            steps {
+                echo "Cleaning local Maven repository to force update..."
+                bat "rd /s /q %USERPROFILE%\\.m2\\repository"
+            }
+        }
+
         stage('Preparation') {
             steps {
                 echo "Preparing environment..."
@@ -29,7 +36,7 @@ pipeline {
             steps {
                 echo "Building Spring Boot JAR..."
                 dir('client-service') {
-                    bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests"
+                    bat "${MAVEN_HOME}\\bin\\mvn clean package -DskipTests -U"
                 }
             }
         }
@@ -39,7 +46,7 @@ pipeline {
                 echo "Deploying artifact to JFrog Artifactory..."
                 withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
                     dir('client-service') {
-                        bat "${MAVEN_HOME}\\bin\\mvn deploy -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD%"
+                        bat "${MAVEN_HOME}\\bin\\mvn clean deploy -U -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD%"
                     }
                 }
             }
@@ -51,7 +58,7 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                         dir('client-service') {
-                            bat "${MAVEN_HOME}\\bin\\mvn sonar:sonar -Dsonar.projectKey=client-service -Dsonar.host.url=http://localhost:9000 -Dsonar.login=%SONAR_TOKEN% -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes"
+                            bat "${MAVEN_HOME}\\bin\\mvn sonar:sonar -U -Dsonar.projectKey=client-service -Dsonar.host.url=http://localhost:9000 -Dsonar.login=%SONAR_TOKEN% -Dsonar.sources=src/main/java -Dsonar.java.binaries=target/classes"
                         }
                     }
                 }
@@ -64,6 +71,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
                     withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
                         dir('client-service') {
+                            bat "${MAVEN_HOME}\\bin\\mvn clean install -U -s ${WORKSPACE}\\settings.xml"
                             bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dartifactory.username=%JFROG_USER% -Dartifactory.password=%JFROG_PASSWORD% -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true"
                         }
                     }
