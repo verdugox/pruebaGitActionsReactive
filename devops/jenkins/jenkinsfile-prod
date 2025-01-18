@@ -68,14 +68,16 @@ pipeline {
         stage('Fortify on Demand Analysis') {
             steps {
                 echo "Running Fortify on Demand Analysis..."
-                withCredentials([usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD')]) {
-                    withCredentials([usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD')]) {
-                        dir('client-service') {
-                            bat "${MAVEN_HOME}\\bin\\mvn clean install -U -s ${WORKSPACE}\\settings.xml"
-                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.generate.spec=true"
-                            bat "if exist cs-spec.json echo 'cs-spec.json file generated successfully' || echo 'ERROR: cs-spec.json not found!'"
-                            bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.username=%FOD_USERNAME% -Dfortify.cloudscan.auth.password=%FOD_PASSWORD% -Dfortify.cloudscan.upload=true -Dfortify.cloudscan.startScan=true -Dfortify.token=${FORTIFY_TOKEN}"
-                        }
+                withCredentials([
+                    usernamePassword(credentialsId: FORTIFY_CREDENTIALS_ID, usernameVariable: 'FOD_USERNAME', passwordVariable: 'FOD_PASSWORD'),
+                    usernamePassword(credentialsId: JFROG_CREDENTIALS_ID, usernameVariable: 'JFROG_USER', passwordVariable: 'JFROG_PASSWORD'),
+                    string(credentialsId: 'fortify-token2', variable: 'FORTIFY_TOKEN') // Se cambia el ID de la credencial
+                ]) {
+                    dir('client-service') {
+                        bat "${MAVEN_HOME}\\bin\\mvn clean install -U -s ${WORKSPACE}\\settings.xml"
+                        bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.generate.spec=true"
+                        bat "if exist cs-spec.json echo 'cs-spec.json file generated successfully' || echo 'ERROR: cs-spec.json not found!'"
+                        bat "${MAVEN_HOME}\\bin\\mvn com.fortify.cloudscan.plugins.maven:project-spec-maven-plugin:24.2.0.0050:spec -s ${WORKSPACE}\\settings.xml -Dfortify.cloudscan.app=${FORTIFY_APP_NAME} -Dfortify.cloudscan.version=${FORTIFY_PROJECT_VERSION} -Dfortify.cloudscan.url=${FORTIFY_URL} -Dfortify.cloudscan.auth.token=%FORTIFY_TOKEN% -Dfortify.cloudscan.upload=true -Dfortify.cloudscan.startScan=true"
                     }
                 }
             }
