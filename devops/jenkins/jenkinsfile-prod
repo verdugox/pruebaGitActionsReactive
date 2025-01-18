@@ -15,7 +15,6 @@ pipeline {
         FORTIFY_URL = 'https://trial.fortify.com/Applications/237623'
         JFROG_CREDENTIALS_ID = 'jfrog-credentials'
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig'
-        FORTIFY_BSI_TOKEN = 'fortify-bsi-token'
     }
 
     stages {
@@ -84,6 +83,17 @@ pipeline {
             }
         }
 
+        stage('Post-build Actions - Fortify on Demand Static Assessment') {
+            steps {
+                echo "Executing Post-build Actions for Fortify on Demand"
+                script {
+                    withCredentials([string(credentialsId: 'fortify-token2', variable: 'FORTIFY_TOKEN')]) {
+                        bat "curl -X POST https://api.trial.fortify.com/v1/scans -H \"Authorization: Bearer %FORTIFY_TOKEN%\" -H \"Content-Type: application/json\" -d \"{\\\"applicationId\\\": \\\"${FORTIFY_APP_NAME}\\\", \\\"versionId\\\": \\\"${FORTIFY_PROJECT_VERSION}\\\", \\\"scanType\\\": \\\"static\\\"}\""
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker Image..."
@@ -121,13 +131,6 @@ pipeline {
     }
 
     post {
-        always {
-            echo "Post-build Actions - Fortify on Demand Static Assessment"
-            withCredentials([string(credentialsId: FORTIFY_BSI_TOKEN, variable: 'BSI_TOKEN')]) {
-                bat "curl -X POST https://api.trial.fortify.com/v1/scans -H \"Authorization: Bearer %BSI_TOKEN%\" -H \"Content-Type: application/json\" -d \"{\\\"applicationId\\\": \\\"${FORTIFY_APP_NAME}\\\", \\\"versionId\\\": \\\"${FORTIFY_PROJECT_VERSION}\\\", \\\"scanType\\\": \\\"static\\\"}\""
-            }
-        }
-
         success {
             echo "Pipeline executed successfully!"
             mail to: 'luisandresverdugox@gmail.com',
