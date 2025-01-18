@@ -82,6 +82,13 @@
                         <version>3.9.6</version>
                         <scope>runtime</scope>
                     </dependency>
+                    <!-- Gson Dependency for Fortify Plugin -->
+                    <dependency>
+                        <groupId>com.google.code.gson</groupId>
+                        <artifactId>gson</artifactId>
+                        <version>2.11.0</version>
+                        <scope>runtime</scope>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
