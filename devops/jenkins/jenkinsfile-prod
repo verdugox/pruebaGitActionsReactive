@@ -15,6 +15,7 @@ pipeline {
         FORTIFY_URL = 'https://trial.fortify.com/Applications/237623'
         JFROG_CREDENTIALS_ID = 'jfrog-credentials'
         KUBECONFIG_CREDENTIALS_ID = 'kubeconfig'
+        FORTIFY_BSI_TOKEN = 'fortify-bsi-token'
     }
 
     stages {
@@ -120,12 +121,20 @@ pipeline {
     }
 
     post {
+        always {
+            echo "Post-build Actions - Fortify on Demand Static Assessment"
+            withCredentials([string(credentialsId: FORTIFY_BSI_TOKEN, variable: 'BSI_TOKEN')]) {
+                bat "curl -X POST https://api.trial.fortify.com/v1/scans -H \"Authorization: Bearer %BSI_TOKEN%\" -H \"Content-Type: application/json\" -d \"{\\\"applicationId\\\": \\\"${FORTIFY_APP_NAME}\\\", \\\"versionId\\\": \\\"${FORTIFY_PROJECT_VERSION}\\\", \\\"scanType\\\": \\\"static\\\"}\""
+            }
+        }
+
         success {
             echo "Pipeline executed successfully!"
             mail to: 'luisandresverdugox@gmail.com',
                  subject: 'Pipeline Success: Deployment Completed',
                  body: "The pipeline execution was successful!\n\nDetails:\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nStatus: SUCCESS\n\nCheck the console output at ${env.BUILD_URL} for more details."
         }
+
         failure {
             echo "Pipeline failed. Check logs for more details."
             mail to: 'luisandresverdugox@gmail.com',
