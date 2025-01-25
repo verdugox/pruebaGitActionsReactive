@@ -61,5 +61,6 @@ jobs:
       # 3. Desplegar en AKS
       - name: Deploy to AKS
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          kubectl apply -f .github/k8s/deployment.yaml
+          kubectl apply -f .github/k8s/service.yaml
+      
