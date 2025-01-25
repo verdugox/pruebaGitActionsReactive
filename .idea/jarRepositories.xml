@@ -37,6 +37,11 @@
       <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-snapshot" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="libs-virtual" />
+      <option name="name" value="libs-virtual" />
+      <option name="url" value="https://trial1d22qj.jfrog.io/artifactory/libs-release" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="fortify" />
       <option name="name" value="fortify" />
       <option name="url" value="https://software.microfocus.com/software/enterprise-security" />

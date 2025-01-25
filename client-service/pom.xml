@@ -19,15 +19,19 @@
     <description>Pruebas de Microservicios para conectar GIT Actions y Jenkins</description>
 
     <dependencies>
-        <!-- Spring Boot Dependencies -->
+        <!-- Spring Boot Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
+        <!-- MongoDB Reactivo -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
         </dependency>
+
+        <!-- Spring WebFlux -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
@@ -40,7 +44,31 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Testing -->
+        <!-- Spring Boot Mail (Para envío de correos con JavaMail) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Jakarta Mail API (Requerido para `MimeMessageHelper`) -->
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+
+        <!-- Angus Mail (Implementación moderna de Jakarta Mail en Spring Boot 3+) -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+        </dependency>
+
+        <!-- Reactor Core (Requerido para Programación Reactiva con Spring WebFlux) -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+
+        <!-- Dependencias para Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -50,6 +78,12 @@
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- Dependencias para subir/descargar imagenes en un blogstorage de cloudinary -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.37.0</version>
         </dependency>
     </dependencies>
 
@@ -86,7 +120,7 @@
                     <dependency>
                         <groupId>commons-cli</groupId>
                         <artifactId>commons-cli</artifactId>
-                        <version>1.6.0</version>
+                        <version>1.8.0</version>
                         <scope>runtime</scope>
                     </dependency>
                     <dependency>

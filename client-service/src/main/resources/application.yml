@@ -1,21 +1,39 @@
 spring:
   application:
     name: client-service
+
   data:
     mongodb:
       uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true&retryWrites=true&w=majority
-  ssl:
-    enabled: true
+
+  mail:
+    host: smtpout.secureserver.net
+    port: 465
+    username: administrador@sorteosc.com  # Remitente válido en GoDaddy
+    password: Bahamutx123$
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          from: administrador@sorteosc.com  # Remitente explícito
+          starttls.enable: false  # Deshabilitado porque el puerto 465 usa SSL directamente
+          ssl.enable: true
+          ssl.trust: smtpout.secureserver.net
 
 server:
   port: 8086
 
+cloudinary:
+  cloud_name: "dizkdk1te"
+  api_key: "512199139637219"
+  api_secret: "oINQ5aSxA8qO3PPN_Uo02fCoScY"
+
 logging:
   level:
-    root: INFO              # Nivel de log global
-    org.mongodb.driver: DEBUG # Detalles de MongoDB (conexiones, consultas)
-    org.springframework.web: DEBUG # Peticiones HTTP entrantes y salientes
-    org.springframework.data: DEBUG # Interacciones con repositorios de datos
-    org.springframework.boot: INFO # Logs de inicialización de Spring Boot
-    reactor: DEBUG           # Logs del flujo reactivo
-
+    root: INFO
+    org.mongodb.driver: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.data: DEBUG
+    org.springframework.boot: INFO
+    reactor: DEBUG

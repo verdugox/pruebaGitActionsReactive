@@ -26,20 +26,24 @@ public class ClientController {
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Client>> getClientById(@PathVariable String id) {
         return service.getClientById(id)
-                .map(client -> ResponseEntity.ok(client))
+                .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Registra un cliente con la URL de Cloudinary ya generada desde el frontend.
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ResponseEntity<Client>> createClient(@RequestBody Client client) {
-        return service.validarPago(client.getReferenciaPago())
-                .flatMap(validado -> {
-                    if (!validado) {
-                        return Mono.just(ResponseEntity.badRequest().build());
-                    }
-                    return service.saveClient(client)
-                            .map(savedClient -> ResponseEntity.status(HttpStatus.CREATED).body(savedClient));
+        if (client.getVoucherUrl() == null || client.getVoucherUrl().isEmpty()) {
+            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
+        }
+
+        return service.saveClient(client)
+                .map(savedClient -> ResponseEntity.status(HttpStatus.CREATED).body(savedClient))
+                .onErrorResume(e -> {
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
                 });
     }
 
@@ -47,5 +51,10 @@ public class ClientController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteClient(@PathVariable String id) {
         return service.deleteClient(id);
+    }
+
+    @GetMapping("/approve/{id}")
+    public Mono<ResponseEntity<Client>> approveClient(@PathVariable String id) {
+        return service.approveClient(id);
     }
 }
