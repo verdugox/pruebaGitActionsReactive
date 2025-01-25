@@ -119,6 +119,8 @@ jobs:
                     value: "${{ secrets.CLOUDINARY_API_KEY }}"
                   - name: CLOUDINARY_API_SECRET
                     value: "${{ secrets.CLOUDINARY_API_SECRET }}"
+                  - name: APP_BASE_URL
+                    value: "http://48.216.202.189"
           ---
           apiVersion: v1
           kind: Service

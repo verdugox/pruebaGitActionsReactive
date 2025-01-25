@@ -29,6 +29,9 @@ cloudinary:
   api_key: "512199139637219"
   api_secret: "oINQ5aSxA8qO3PPN_Uo02fCoScY"
 
+app:
+  base-url: "http://48.216.202.189"
+
 logging:
   level:
     root: INFO
