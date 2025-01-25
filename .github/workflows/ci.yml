@@ -11,43 +11,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar código fuente
+      # 1️⃣ Descargar código fuente y asegurar repositorio completo
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Asegura que se descarga todo el repo
 
-      # 2. Verificar ubicación de archivos en GitHub Actions
-      - name: Print current workspace
+      # 2️⃣ Depuración: Verificar archivos en GitHub Actions
+      - name: Debug Workspace Structure
         run: |
           echo "🔍 Ubicación actual del workspace:"
           pwd
           echo "📂 Lista de archivos en el workspace:"
           ls -R
 
-      # 3. Configurar JDK 17
+      # 3️⃣ Configurar JDK 17
       - name: Set up Java version
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4. Construir la aplicación con Maven
+      # 4️⃣ Construir la aplicación con Maven
       - name: Build with Maven
         working-directory: ./client-service
         run: mvn clean install
 
-      # 5. Iniciar sesión en Docker Hub
+      # 5️⃣ Iniciar sesión en Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 6. Construir la imagen de Docker (con `.` al final)
+      # 6️⃣ Construir la imagen de Docker
       - name: Build Docker Image
         working-directory: ./client-service
         run: docker build -t verdugox/springboot-app:1.0 .
 
-      # 7. Subir la imagen a Docker Hub
+      # 7️⃣ Subir la imagen a Docker Hub
       - name: Push Docker Image
         run: docker push verdugox/springboot-app:1.0
 
@@ -56,52 +58,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Autenticarse en Azure
+      # 1️⃣ Autenticarse en Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # 2. Configurar contexto de AKS
+      # 2️⃣ Configurar contexto de AKS
       - name: Set AKS Context
         run: az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER }}
 
-      # 3. Verificar permisos de usuario en AKS
+      # 3️⃣ Verificar permisos en AKS
       - name: Verify Kubernetes Permissions
         run: |
           echo "🔍 Verificando permisos en AKS..."
           kubectl auth can-i create deployments --all-namespaces
           kubectl auth can-i create services --all-namespaces
 
-      # 4. Verificar existencia de `k8s/`
-      - name: Debug Kubernetes YAML files
-        run: |
-          echo "📂 Verificando archivos de despliegue en el workspace..."
-          ls -R $GITHUB_WORKSPACE || true
-
-      # 5. Asegurar que `k8s/` existe antes de proceder
+      # 4️⃣ Verificar si `k8s/` existe y moverlo si es necesario
       - name: Ensure k8s directory exists
         run: |
-          if [ ! -d "$GITHUB_WORKSPACE/k8s" ]; then
-            echo "🚨 ERROR: La carpeta 'k8s/' no existe en el workspace."
+          echo "📂 Buscando carpeta 'k8s/' en el workspace..."
+          if [ -d "$GITHUB_WORKSPACE/k8s" ]; then
+            echo "✅ Carpeta 'k8s/' encontrada en el workspace."
+          else
+            echo "🚨 ERROR: La carpeta 'k8s/' NO EXISTE en el workspace."
+            echo "🔍 Buscando en otras ubicaciones..."
+            find $GITHUB_WORKSPACE -type d -name "k8s"
             exit 1
           fi
-          echo "✅ Carpeta 'k8s/' encontrada correctamente."
 
-      # 6. Aplicar los archivos de Kubernetes (espera 5s para sincronización)
+      # 5️⃣ Aplicar los archivos de Kubernetes
       - name: Deploy to AKS
         run: |
-          echo "⏳ Esperando 5 segundos para asegurar disponibilidad..."
+          echo "⏳ Esperando 5 segundos antes del despliegue..."
           sleep 5
           echo "🚀 Aplicando archivos de Kubernetes..."
           kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
           kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
 
-      # 7. Verificar estado de los pods después del despliegue
+      # 6️⃣ Verificar estado de los pods después del despliegue
       - name: List Kubernetes Pods
         run: kubectl get pods -o wide
 
-      # 8. Reiniciar los pods de forma segura
+      # 7️⃣ Reiniciar los pods de forma segura
       - name: Restart AKS Pods
         run: |
           echo "🔄 Reiniciando pods en AKS..."
@@ -113,6 +113,6 @@ jobs:
             exit 1
           fi
 
-      # 9. Verificar estado final del despliegue
+      # 8️⃣ Verificar estado final del despliegue
       - name: Verify Deployment Status
         run: kubectl get deployments -o wide
