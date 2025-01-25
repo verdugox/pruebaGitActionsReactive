@@ -89,7 +89,7 @@ public class ClientService {
 
         String content = "<p>El cliente <b>" + client.getNombres() + " " + client.getApellidos() + "</b> ha registrado un pago.</p>"
                 + "<p>Por favor, revisa y aprueba la solicitud en el siguiente enlace:</p>"
-                + "<a href='http://localhost:8086/api/clients/approve/" + client.getId() + "'>Aprobar Cliente</a>"
+                + "<a href='http://48.216.202.189/api/clients/approve/" + client.getId() + "'>Aprobar Cliente</a>"
                 + "<p><b>Imagen del voucher:</b></p>"
                 + "<img src='" + client.getVoucherUrl() + "' width='300'/>"; // Muestra la imagen en el correo
 

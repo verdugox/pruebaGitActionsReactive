@@ -15,12 +15,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Verificar ubicación de archivos
+      # 2. Verificar ubicación de archivos en GitHub Actions
       - name: Print current workspace
         run: |
-          echo "Ubicación actual del workspace:"
+          echo "🔍 Ubicación actual del workspace:"
           pwd
-          echo "Lista de archivos en el workspace:"
+          echo "📂 Lista de archivos en el workspace:"
           ls -R
 
       # 3. Configurar JDK 17
@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 6. Construir la imagen de Docker
+      # 6. Construir la imagen de Docker (con `.` al final)
       - name: Build Docker Image
         working-directory: ./client-service
         run: docker build -t verdugox/springboot-app:1.0 .
@@ -66,33 +66,53 @@ jobs:
       - name: Set AKS Context
         run: az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER }}
 
-      # 3. Verificar la existencia de `k8s/`
+      # 3. Verificar permisos de usuario en AKS
+      - name: Verify Kubernetes Permissions
+        run: |
+          echo "🔍 Verificando permisos en AKS..."
+          kubectl auth can-i create deployments --all-namespaces
+          kubectl auth can-i create services --all-namespaces
+
+      # 4. Verificar existencia de `k8s/`
       - name: Debug Kubernetes YAML files
         run: |
-          echo "Verificando archivos de despliegue..."
+          echo "📂 Verificando archivos de despliegue en el workspace..."
           ls -R $GITHUB_WORKSPACE || true
 
-      # 4. Asegurar que `k8s/` existe antes de proceder
+      # 5. Asegurar que `k8s/` existe antes de proceder
       - name: Ensure k8s directory exists
         run: |
           if [ ! -d "$GITHUB_WORKSPACE/k8s" ]; then
-            echo "ERROR: La carpeta 'k8s/' no existe en el workspace."
+            echo "🚨 ERROR: La carpeta 'k8s/' no existe en el workspace."
             exit 1
           fi
-          echo "Carpeta 'k8s/' encontrada correctamente."
+          echo "✅ Carpeta 'k8s/' encontrada correctamente."
 
-      # 5. Aplicar los archivos de Kubernetes (con espera)
+      # 6. Aplicar los archivos de Kubernetes (espera 5s para sincronización)
       - name: Deploy to AKS
         run: |
-          echo "Esperando 5 segundos para asegurar disponibilidad..."
+          echo "⏳ Esperando 5 segundos para asegurar disponibilidad..."
           sleep 5
+          echo "🚀 Aplicando archivos de Kubernetes..."
           kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
           kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
 
-      # 6. Verificar los pods después del despliegue
+      # 7. Verificar estado de los pods después del despliegue
       - name: List Kubernetes Pods
         run: kubectl get pods -o wide
 
-      # 7. Reiniciar los pods después del despliegue
+      # 8. Reiniciar los pods de forma segura
       - name: Restart AKS Pods
-        run: kubectl rollout restart deployment springboot-app
+        run: |
+          echo "🔄 Reiniciando pods en AKS..."
+          if kubectl get deployment springboot-app; then
+            kubectl rollout restart deployment springboot-app
+          else
+            echo "⚠️ Advertencia: No se encontró el deployment 'springboot-app', verificando nuevamente..."
+            kubectl get deployments
+            exit 1
+          fi
+
+      # 9. Verificar estado final del despliegue
+      - name: Verify Deployment Status
+        run: kubectl get deployments -o wide

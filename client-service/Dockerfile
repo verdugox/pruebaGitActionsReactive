@@ -1,19 +1,26 @@
-# Usar OpenJDK 17 como imagen base
+# 1. Usar una imagen ligera de OpenJDK 17 basada en Alpine
 FROM openjdk:17-jdk-alpine
 
-# Instalar certificados raíz necesarios para conexiones SSL
+# 2. Instalar certificados raíz necesarios para conexiones SSL
 RUN apk add --no-cache ca-certificates \
     && update-ca-certificates
 
-# Crear un directorio para la app
+# 3. Crear un directorio de trabajo en el contenedor
 WORKDIR /app
 
-# Copiar el archivo JAR al contenedor
+# 4. Copiar el archivo JAR generado por Maven al contenedor
 COPY target/client-service-0.0.1-SNAPSHOT.jar app.jar
 
-# Establecer variables de entorno para JVM si es necesario
-# Por ejemplo, para habilitar depuración o configuraciones específicas de red
+# 5. Crear un usuario sin privilegios (seguridad mejorada)
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring
+
+# 6. Exponer el puerto en el que corre la aplicación
+EXPOSE 8086
+
+# 7. Definir variables de entorno para JVM (optimización)
 ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom"
 
-# Comando para ejecutar la aplicación
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+# 8. Establecer el comando por defecto para ejecutar la app
+CMD ["java", "-jar", "/app/app.jar"]
+
