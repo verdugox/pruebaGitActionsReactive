@@ -33,7 +33,7 @@ jobs:
 
       # 5. Construir la imagen de Docker
       - name: Build Docker Image
-        run: docker build -t verdugox/springboot-app:1.0 .
+        run: docker build -t verdugox/springboot-app:1.0
 
       # 6. Subir la imagen a Docker Hub
       - name: Push Docker Image
