@@ -3,21 +3,19 @@ name: CI/CD Pipeline for AKS
 on:
   push:
     branches:
-      - develop  # Ejecutar solo en 'develop'
-  workflow_dispatch:  # Permitir ejecución manual
+      - develop
+  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Descargar código fuente y asegurar repositorio completo
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Asegura que se descarga todo el repo
+          fetch-depth: 0  # Asegurar que se clona el repo completo
 
-      # 2️⃣ Depuración: Verificar archivos en GitHub Actions
       - name: Debug Workspace Structure
         run: |
           echo "🔍 Ubicación actual del workspace:"
@@ -25,31 +23,26 @@ jobs:
           echo "📂 Lista de archivos en el workspace:"
           ls -R
 
-      # 3️⃣ Configurar JDK 17
       - name: Set up Java version
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4️⃣ Construir la aplicación con Maven
       - name: Build with Maven
         working-directory: ./client-service
         run: mvn clean install
 
-      # 5️⃣ Iniciar sesión en Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 6️⃣ Construir la imagen de Docker
       - name: Build Docker Image
         working-directory: ./client-service
         run: docker build -t verdugox/springboot-app:1.0 .
 
-      # 7️⃣ Subir la imagen a Docker Hub
       - name: Push Docker Image
         run: docker push verdugox/springboot-app:1.0
 
@@ -58,24 +51,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Autenticarse en Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # 2️⃣ Configurar contexto de AKS
       - name: Set AKS Context
         run: az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER }}
 
-      # 3️⃣ Verificar permisos en AKS
       - name: Verify Kubernetes Permissions
         run: |
           echo "🔍 Verificando permisos en AKS..."
           kubectl auth can-i create deployments --all-namespaces
           kubectl auth can-i create services --all-namespaces
 
-      # 4️⃣ Verificar si `k8s/` existe y corregir la ruta si es necesario
       - name: Ensure k8s directory exists
         run: |
           echo "📂 Buscando carpeta 'k8s/' en el workspace..."
@@ -84,35 +73,27 @@ jobs:
           else
             echo "🚨 ERROR: La carpeta 'k8s/' NO EXISTE en el workspace."
             echo "🔍 Buscando en otras ubicaciones..."
-            find $GITHUB_WORKSPACE -type d -name "k8s"
-            exit 1
+            FOUND_PATH=$(find $GITHUB_WORKSPACE -type d -name "k8s" | head -n 1)
+            if [ -n "$FOUND_PATH" ]; then
+              echo "📂 Moviendo $FOUND_PATH a $GITHUB_WORKSPACE/k8s"
+              mv "$FOUND_PATH" "$GITHUB_WORKSPACE/k8s"
+            else
+              echo "🚨 ERROR: No se encontró 'k8s/' en ningún lugar."
+              exit 1
+            fi
           fi
 
-      # 5️⃣ Aplicar los archivos de Kubernetes (verificando rutas dinámicamente)
       - name: Deploy to AKS
         run: |
           echo "⏳ Esperando 5 segundos antes del despliegue..."
           sleep 5
           echo "🚀 Aplicando archivos de Kubernetes..."
-          DEPLOYMENT_FILE=$(find $GITHUB_WORKSPACE -type f -name "deployment.yaml")
-          SERVICE_FILE=$(find $GITHUB_WORKSPACE -type f -name "service.yaml")
+          kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
+          kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
 
-          if [ -f "$DEPLOYMENT_FILE" ] && [ -f "$SERVICE_FILE" ]; then
-            echo "✅ Archivos YAML encontrados:"
-            echo "$DEPLOYMENT_FILE"
-            echo "$SERVICE_FILE"
-            kubectl apply -f "$DEPLOYMENT_FILE"
-            kubectl apply -f "$SERVICE_FILE"
-          else
-            echo "🚨 ERROR: No se encontraron los archivos de Kubernetes."
-            exit 1
-          fi
-
-      # 6️⃣ Verificar estado de los pods después del despliegue
       - name: List Kubernetes Pods
         run: kubectl get pods -o wide
 
-      # 7️⃣ Reiniciar los pods de forma segura
       - name: Restart AKS Pods
         run: |
           echo "🔄 Reiniciando pods en AKS..."
@@ -124,6 +105,5 @@ jobs:
             exit 1
           fi
 
-      # 8️⃣ Verificar estado final del despliegue
       - name: Verify Deployment Status
         run: kubectl get deployments -o wide
