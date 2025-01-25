@@ -11,11 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Clonar el código completamente
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Asegurar que se clona el repo completo
+          fetch-depth: 0  # Asegura que se clona todo el historial del repo
 
+      # 2️⃣ Debug: Verificar que la estructura del workspace es correcta
       - name: Debug Workspace Structure
         run: |
           echo "🔍 Ubicación actual del workspace:"
@@ -23,26 +25,31 @@ jobs:
           echo "📂 Lista de archivos en el workspace:"
           ls -R
 
+      # 3️⃣ Configurar JDK 17 para Maven
       - name: Set up Java version
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # 4️⃣ Construir la aplicación con Maven
       - name: Build with Maven
         working-directory: ./client-service
         run: mvn clean install
 
+      # 5️⃣ Iniciar sesión en Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # 6️⃣ Construir la imagen de Docker correctamente
       - name: Build Docker Image
         working-directory: ./client-service
         run: docker build -t verdugox/springboot-app:1.0 .
 
+      # 7️⃣ Subir la imagen a Docker Hub
       - name: Push Docker Image
         run: docker push verdugox/springboot-app:1.0
 
@@ -51,25 +58,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Autenticarse en Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # 2️⃣ Obtener credenciales del AKS
       - name: Set AKS Context
         run: az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER }}
 
+      # 3️⃣ Verificar permisos en Kubernetes
       - name: Verify Kubernetes Permissions
         run: |
           echo "🔍 Verificando permisos en AKS..."
           kubectl auth can-i create deployments --all-namespaces
           kubectl auth can-i create services --all-namespaces
 
+      # 4️⃣ Verificar existencia y corregir ubicación de `k8s/`
       - name: Ensure k8s directory exists
         run: |
           echo "📂 Buscando carpeta 'k8s/' en el workspace..."
           if [ -d "$GITHUB_WORKSPACE/k8s" ]; then
-            echo "✅ Carpeta 'k8s/' encontrada en $GITHUB_WORKSPACE."
+            echo "✅ Carpeta 'k8s/' encontrada."
           else
             echo "🚨 ERROR: La carpeta 'k8s/' NO EXISTE en el workspace."
             echo "🔍 Buscando en otras ubicaciones..."
@@ -83,6 +94,7 @@ jobs:
             fi
           fi
 
+      # 5️⃣ Aplicar los archivos de Kubernetes correctamente
       - name: Deploy to AKS
         run: |
           echo "⏳ Esperando 5 segundos antes del despliegue..."
@@ -91,9 +103,11 @@ jobs:
           kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
           kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
 
+      # 6️⃣ Verificar que los pods están corriendo correctamente
       - name: List Kubernetes Pods
         run: kubectl get pods -o wide
 
+      # 7️⃣ Reiniciar los pods en AKS después del despliegue
       - name: Restart AKS Pods
         run: |
           echo "🔄 Reiniciando pods en AKS..."
@@ -105,5 +119,6 @@ jobs:
             exit 1
           fi
 
+      # 8️⃣ Verificar el estado final del despliegue en AKS
       - name: Verify Deployment Status
         run: kubectl get deployments -o wide
