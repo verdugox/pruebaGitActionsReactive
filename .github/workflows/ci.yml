@@ -17,39 +17,31 @@ jobs:
         with:
           fetch-depth: 0  # Asegura que se clona todo el historial del repo
 
-      # 2️⃣ Debug: Verificar que la estructura del workspace es correcta
-      - name: Debug Workspace Structure
-        run: |
-          echo "🔍 Ubicación actual del workspace:"
-          pwd
-          echo "📂 Lista de archivos en el workspace:"
-          ls -R
-
-      # 3️⃣ Configurar JDK 17 para Maven
+      # 2️⃣ Configurar JDK 17 para Maven
       - name: Set up Java version
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 4️⃣ Construir la aplicación con Maven
+      # 3️⃣ Construir la aplicación con Maven
       - name: Build with Maven
         working-directory: ./client-service
         run: mvn clean install
 
-      # 5️⃣ Iniciar sesión en Docker Hub
+      # 4️⃣ Iniciar sesión en Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 6️⃣ Construir la imagen de Docker correctamente
+      # 5️⃣ Construir la imagen de Docker correctamente
       - name: Build Docker Image
         working-directory: ./client-service
         run: docker build -t verdugox/springboot-app:1.0 .
 
-      # 7️⃣ Subir la imagen a Docker Hub
+      # 6️⃣ Subir la imagen a Docker Hub
       - name: Push Docker Image
         run: docker push verdugox/springboot-app:1.0
 
@@ -75,39 +67,57 @@ jobs:
           kubectl auth can-i create deployments --all-namespaces
           kubectl auth can-i create services --all-namespaces
 
-      # 4️⃣ Verificar existencia y corregir ubicación de `k8s/`
-      - name: Ensure k8s directory exists
-        run: |
-          echo "📂 Buscando carpeta 'k8s/' en el workspace..."
-          if [ -d "$GITHUB_WORKSPACE/k8s" ]; then
-            echo "✅ Carpeta 'k8s/' encontrada."
-          else
-            echo "🚨 ERROR: La carpeta 'k8s/' NO EXISTE en el workspace."
-            echo "🔍 Buscando en otras ubicaciones..."
-            FOUND_PATH=$(find $GITHUB_WORKSPACE -type d -name "k8s" | head -n 1)
-            if [ -n "$FOUND_PATH" ]; then
-              echo "📂 Moviendo $FOUND_PATH a $GITHUB_WORKSPACE/k8s"
-              mv "$FOUND_PATH" "$GITHUB_WORKSPACE/k8s"
-            else
-              echo "🚨 ERROR: No se encontró 'k8s/' en ningún lugar."
-              exit 1
-            fi
-          fi
-
-      # 5️⃣ Aplicar los archivos de Kubernetes correctamente
+      # 4️⃣ Desplegar la aplicación en AKS (usando `kubectl apply -f -`)
       - name: Deploy to AKS
         run: |
-          echo "⏳ Esperando 5 segundos antes del despliegue..."
-          sleep 5
-          echo "🚀 Aplicando archivos de Kubernetes..."
-          kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
-          kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
+          echo "🚀 Creando Deployment y Service en Kubernetes..."
+          
+          kubectl apply -f - <<EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: springboot-app
+            labels:
+              app: springboot-app
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: springboot-app
+            template:
+              metadata:
+                labels:
+                  app: springboot-app
+              spec:
+                containers:
+                - name: springboot-app
+                  image: "verdugox/springboot-app:1.0"
+                  ports:
+                  - containerPort: 8086
+                  env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: "prod"
+                  - name: SPRING_DATA_MONGODB_URI
+                    value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true&retryWrites=true&w=majority"
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: springboot-app-service
+          spec:
+            type: LoadBalancer
+            ports:
+            - port: 80
+              targetPort: 8086
+            selector:
+              app: springboot-app
+          EOF
 
-      # 6️⃣ Verificar que los pods están corriendo correctamente
+      # 5️⃣ Verificar que los pods están corriendo correctamente
       - name: List Kubernetes Pods
         run: kubectl get pods -o wide
 
-      # 7️⃣ Reiniciar los pods en AKS después del despliegue
+      # 6️⃣ Reiniciar los pods en AKS después del despliegue
       - name: Restart AKS Pods
         run: |
           echo "🔄 Reiniciando pods en AKS..."
@@ -119,6 +129,6 @@ jobs:
             exit 1
           fi
 
-      # 8️⃣ Verificar el estado final del despliegue en AKS
+      # 7️⃣ Verificar el estado final del despliegue en AKS
       - name: Verify Deployment Status
         run: kubectl get deployments -o wide
