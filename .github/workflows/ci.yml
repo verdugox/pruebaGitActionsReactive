@@ -15,31 +15,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Configurar JDK 17
+      # 2. Verificar ubicación de archivos
+      - name: Print current workspace
+        run: |
+          pwd
+          ls -la
+
+      # 3. Configurar JDK 17
       - name: Set up Java version
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Construir la aplicación con Maven
+      # 4. Construir la aplicación con Maven
       - name: Build with Maven
         working-directory: ./client-service
         run: mvn clean install
 
-      # 4. Iniciar sesión en Docker Hub
+      # 5. Iniciar sesión en Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 5. Construir la imagen de Docker (con `.` al final)
+      # 6. Construir la imagen de Docker
       - name: Build Docker Image
         working-directory: ./client-service
         run: docker build -t verdugox/springboot-app:1.0 .
 
-      # 6. Subir la imagen a Docker Hub
+      # 7. Subir la imagen a Docker Hub
       - name: Push Docker Image
         run: docker push verdugox/springboot-app:1.0
 
@@ -58,15 +64,19 @@ jobs:
       - name: Set AKS Context
         run: az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER }}
 
-      # 3. Verificar que los archivos en k8s/ existen antes del despliegue
-      - name: List Kubernetes YAML files
-        run: ls -R $GITHUB_WORKSPACE/k8s
+      # 3. Verificar la ubicación de `k8s/`
+      - name: Debug Kubernetes YAML files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "List files:"
+          ls -R
 
-      # 4. Desplegar en AKS
+      # 4. Aplicar los archivos de Kubernetes
       - name: Deploy to AKS
         run: |
-          kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
-          kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
 
       # 5. Reiniciar los pods después del despliegue
       - name: Restart AKS Pods
