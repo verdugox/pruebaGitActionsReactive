@@ -1,0 +1,47 @@
+name: CI Pipeline for Develop
+
+on:
+  push:
+    branches:
+      - develop  # Ejecutar el flujo solo en la rama 'develop'
+  workflow_dispatch:  # Permitir ejecución manual del workflow
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Cambiar a Ubuntu para evitar problemas con PowerShell
+
+    steps:
+      # 1. Descargar el código fuente
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Configurar JDK 17
+      - name: Set up Java version
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Construir y verificar el proyecto con Maven
+      - name: Build and Verify with Maven
+        working-directory: ./client-service  # Cambia al directorio del proyecto
+        run: |
+          mvn clean install
+
+      # 4. Notificar a Jenkins para ejecutar el job
+      - name: Trigger Jenkins Job
+        shell: bash  # Usar bash como shell
+        run: |
+          echo "Triggering Jenkins Job..."
+          curl -X POST "${{ secrets.JENKINS_URL }}?token=${{ secrets.JENKINS_JOB_TOKEN }}" \
+          --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          JENKINS_JOB_TOKEN: ${{ secrets.JENKINS_JOB_TOKEN }}
+
+      # 5. Mensaje final
+      - name: Notify Success
+        if: success()
+        run: echo "Build and tests completed successfully on 'develop' branch, Jenkins job triggered!"
