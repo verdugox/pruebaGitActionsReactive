@@ -36,14 +36,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 5️⃣ Construir la imagen de Docker correctamente
+      # 5️⃣ Construir la imagen de Docker con `latest`
       - name: Build Docker Image
         working-directory: ./client-service
-        run: docker build -t verdugox/springboot-app:1.0 .
+        run: docker build -t verdugox/springboot-app:latest .
 
       # 6️⃣ Subir la imagen a Docker Hub
       - name: Push Docker Image
-        run: docker push verdugox/springboot-app:1.0
+        run: docker push verdugox/springboot-app:latest
 
   deploy-to-aks:
     needs: build-and-push
@@ -91,7 +91,8 @@ jobs:
               spec:
                 containers:
                 - name: springboot-app
-                  image: "verdugox/springboot-app:1.0"
+                  image: "verdugox/springboot-app:latest"
+                  imagePullPolicy: Always  # 🚀 Siempre descargar la última imagen
                   ports:
                   - containerPort: 8086
                   env:
@@ -139,17 +140,11 @@ jobs:
       - name: List Kubernetes Pods
         run: kubectl get pods -o wide
 
-      # 6️⃣ Reiniciar los pods en AKS después del despliegue
+      # 6️⃣ Reiniciar los pods en AKS después del despliegue para aplicar la última imagen
       - name: Restart AKS Pods
         run: |
           echo "🔄 Reiniciando pods en AKS..."
-          if kubectl get deployment springboot-app; then
-            kubectl rollout restart deployment springboot-app
-          else
-            echo "⚠️ Advertencia: No se encontró el deployment 'springboot-app', verificando nuevamente..."
-            kubectl get deployments
-            exit 1
-          fi
+          kubectl rollout restart deployment springboot-app
 
       # 7️⃣ Verificar el estado final del despliegue en AKS
       - name: Verify Deployment Status
