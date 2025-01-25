@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Asegura que se clona todo el historial del repo
+          fetch-depth: 0
 
       # 2️⃣ Configurar JDK 17 para Maven
       - name: Set up Java version
@@ -67,7 +67,7 @@ jobs:
           kubectl auth can-i create deployments --all-namespaces
           kubectl auth can-i create services --all-namespaces
 
-      # 4️⃣ Desplegar la aplicación en AKS (usando `kubectl apply -f -`)
+      # 4️⃣ Desplegar la aplicación en AKS (Incluyendo Variables de Entorno)
       - name: Deploy to AKS
         run: |
           echo "🚀 Creando Deployment y Service en Kubernetes..."
@@ -98,7 +98,27 @@ jobs:
                   - name: SPRING_PROFILES_ACTIVE
                     value: "prod"
                   - name: SPRING_DATA_MONGODB_URI
-                    value: "mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true&retryWrites=true&w=majority"
+                    value: "${{ secrets.MONGODB_URI }}"
+                  - name: SPRING_MAIL_HOST
+                    value: "smtpout.secureserver.net"
+                  - name: SPRING_MAIL_PORT
+                    value: "465"
+                  - name: SPRING_MAIL_USERNAME
+                    value: "${{ secrets.MAIL_USERNAME }}"
+                  - name: SPRING_MAIL_PASSWORD
+                    value: "${{ secrets.MAIL_PASSWORD }}"
+                  - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+                    value: "true"
+                  - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_ENABLE
+                    value: "true"
+                  - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_SSL_TRUST
+                    value: "smtpout.secureserver.net"
+                  - name: CLOUDINARY_CLOUD_NAME
+                    value: "${{ secrets.CLOUDINARY_CLOUD_NAME }}"
+                  - name: CLOUDINARY_API_KEY
+                    value: "${{ secrets.CLOUDINARY_API_KEY }}"
+                  - name: CLOUDINARY_API_SECRET
+                    value: "${{ secrets.CLOUDINARY_API_SECRET }}"
           ---
           apiVersion: v1
           kind: Service
