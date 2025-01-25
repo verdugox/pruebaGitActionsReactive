@@ -18,8 +18,10 @@ jobs:
       # 2. Verificar ubicación de archivos
       - name: Print current workspace
         run: |
+          echo "Ubicación actual del workspace:"
           pwd
-          ls -la
+          echo "Lista de archivos en el workspace:"
+          ls -R
 
       # 3. Configurar JDK 17
       - name: Set up Java version
@@ -64,20 +66,33 @@ jobs:
       - name: Set AKS Context
         run: az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER }}
 
-      # 3. Verificar la ubicación de `k8s/`
+      # 3. Verificar la existencia de `k8s/`
       - name: Debug Kubernetes YAML files
         run: |
-          echo "Current directory:"
-          pwd
-          echo "List files:"
-          ls -R
+          echo "Verificando archivos de despliegue..."
+          ls -R $GITHUB_WORKSPACE || true
 
-      # 4. Aplicar los archivos de Kubernetes
+      # 4. Asegurar que `k8s/` existe antes de proceder
+      - name: Ensure k8s directory exists
+        run: |
+          if [ ! -d "$GITHUB_WORKSPACE/k8s" ]; then
+            echo "ERROR: La carpeta 'k8s/' no existe en el workspace."
+            exit 1
+          fi
+          echo "Carpeta 'k8s/' encontrada correctamente."
+
+      # 5. Aplicar los archivos de Kubernetes (con espera)
       - name: Deploy to AKS
         run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
+          echo "Esperando 5 segundos para asegurar disponibilidad..."
+          sleep 5
+          kubectl apply -f $GITHUB_WORKSPACE/k8s/deployment.yaml
+          kubectl apply -f $GITHUB_WORKSPACE/k8s/service.yaml
 
-      # 5. Reiniciar los pods después del despliegue
+      # 6. Verificar los pods después del despliegue
+      - name: List Kubernetes Pods
+        run: kubectl get pods -o wide
+
+      # 7. Reiniciar los pods después del despliegue
       - name: Restart AKS Pods
         run: kubectl rollout restart deployment springboot-app
