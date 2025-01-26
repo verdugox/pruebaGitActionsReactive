@@ -53,8 +53,30 @@ public class ClientService {
                 );
     }
 
+    /**
+     * Actualiza el cliente.
+     */
     public Mono<Void> deleteClient(String id) {
         return repository.deleteById(id);
+    }
+
+    public Mono<Client> updateClient(String id, Client client) {
+        return repository.findById(id)
+                .flatMap(existingClient -> {
+                    existingClient.setDni(client.getDni());
+                    existingClient.setNombres(client.getNombres());
+                    existingClient.setApellidos(client.getApellidos());
+                    existingClient.setDireccion(client.getDireccion());
+                    existingClient.setPais(client.getPais());
+                    existingClient.setProvincia(client.getProvincia());
+                    existingClient.setDistrito(client.getDistrito());
+                    existingClient.setCorreo(client.getCorreo());
+                    existingClient.setTelefono(client.getTelefono());
+                    existingClient.setVoucherUrl(client.getVoucherUrl());
+                    existingClient.setReferenciaPago(client.getReferenciaPago());
+                    existingClient.setEstado(client.getEstado());
+                    return repository.save(existingClient);
+                });
     }
 
     /**

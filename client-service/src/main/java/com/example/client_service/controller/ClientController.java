@@ -47,6 +47,13 @@ public class ClientController {
                 });
     }
 
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<Client>> updateClient(@PathVariable String id, @RequestBody Client client) {
+        return service.updateClient(id, client)
+                .map(updatedClient -> ResponseEntity.ok(updatedClient))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteClient(@PathVariable String id) {
