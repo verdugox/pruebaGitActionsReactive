@@ -49,16 +49,15 @@ public class ClientController {
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Client>> updateClient(@PathVariable String id, @RequestBody Client client) {
-        return service.updateClient(id, client)
-                .map(updatedClient -> ResponseEntity.ok(updatedClient))
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+        return service.updateClient(id, client);
     }
 
+
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteClient(@PathVariable String id) {
+    public Mono<ResponseEntity<Void>> deleteClient(@PathVariable String id) {
         return service.deleteClient(id);
     }
+
 
     @GetMapping("/approve/{id}")
     public Mono<ResponseEntity<Client>> approveClient(@PathVariable String id) {

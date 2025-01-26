@@ -122,6 +122,8 @@ jobs:
                     value: "${{ secrets.CLOUDINARY_API_SECRET }}"
                   - name: APP_BASE_URL
                     value: "http://48.216.202.189"
+                  - name: SORTEO_IMAGE_URL
+                    value: "${{ secrets.SORTEO_IMAGE_URL }}"
           ---
           apiVersion: v1
           kind: Service

@@ -24,8 +24,13 @@ public class ClientService {
     @Value("${app.base-url}")
     private String baseUrl; // URL dinámica tomada desde application.yml
 
+
+
     private static final String ADMIN_EMAIL = "administrador@sorteosc.com";
-    private static final String SORTEO_IMAGE_URL = "https://res.cloudinary.com/dizkdk1te/image/upload/v1737819950/sorteolaptop_qxfrux.webp";
+
+    @Value("${app.sorteo-image-url}")
+    private String sorteoImageUrl; // URL de la imagen parametrizada desde secrets o configuración
+
 
     public ClientService(ClientRepository repository, JavaMailSender mailSender) {
         this.repository = repository;
@@ -54,13 +59,22 @@ public class ClientService {
     }
 
     /**
-     * Actualiza el cliente.
+     * Elimina el cliente.
      */
-    public Mono<Void> deleteClient(String id) {
-        return repository.deleteById(id);
+    public Mono<ResponseEntity<Void>> deleteClient(String id) {
+        return repository.findById(id)
+                .flatMap(existingClient ->
+                        repository.delete(existingClient)
+                                .then(Mono.fromSupplier(() -> ResponseEntity.noContent().<Void>build())) // Conversión segura a ResponseEntity<Void>
+                )
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    public Mono<Client> updateClient(String id, Client client) {
+
+    /**
+     * Actualiza el cliente.
+     */
+    public Mono<ResponseEntity<Client>> updateClient(String id, Client client) {
         return repository.findById(id)
                 .flatMap(existingClient -> {
                     existingClient.setDni(client.getDni());
@@ -76,8 +90,11 @@ public class ClientService {
                     existingClient.setReferenciaPago(client.getReferenciaPago());
                     existingClient.setEstado(client.getEstado());
                     return repository.save(existingClient);
-                });
+                })
+                .map(updatedClient -> ResponseEntity.ok(updatedClient))
+                .defaultIfEmpty(ResponseEntity.notFound().build()); // Manejo de cliente no encontrado
     }
+
 
     /**
      * Aprueba el cliente y le envía un correo con la confirmación del sorteo.
@@ -146,7 +163,7 @@ public class ClientService {
                 String content = "<p>Hola <b>" + client.getNombres() + "</b>,</p>"
                         + "<p>Tu registro ha sido aprobado. ¡Gracias por participar en nuestro sorteo!</p>"
                         + "<p><b>Detalles del sorteo:</b></p>"
-                        + "<img src='" + SORTEO_IMAGE_URL + "' width='600'/>";
+                        + "<img src='" + sorteoImageUrl + "' width='600'/>";
 
                 helper.setText(content, true);
                 mailSender.send(message);

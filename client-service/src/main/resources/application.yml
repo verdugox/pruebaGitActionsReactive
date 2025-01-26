@@ -31,6 +31,7 @@ cloudinary:
 
 app:
   base-url: "http://48.216.202.189"
+  sorteo-image-url: ${SORTEO_IMAGE_URL:https://res.cloudinary.com/dizkdk1te/image/upload/v1737902820/voucher01_ds91fj.jpg}  # Valor desde GitHub Actions o default
 
 logging:
   level:
