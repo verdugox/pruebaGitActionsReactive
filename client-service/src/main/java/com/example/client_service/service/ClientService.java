@@ -115,8 +115,19 @@ public class ClientService {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    public Mono<ResponseEntity<Client>> denyClient(String id) {
+        return repository.findById(id)
+                .flatMap(client -> {
+                    client.setEstado("denegado");
+                    return repository.save(client)
+                            .flatMap(updatedClient -> sendDeniedNotification(updatedClient)
+                                    .thenReturn(ResponseEntity.ok(updatedClient)));
+                })
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
     /**
-     * Envía un correo al administrador con el voucher adjunto.
+     * Envía un correo al administrador con los enlaces para aprobar o denegar al cliente.
      */
     private Mono<Void> sendAdminNotification(Client client) {
         return Mono.fromRunnable(() -> {
@@ -130,10 +141,12 @@ public class ClientService {
                 helper.setSubject("Nuevo Registro Pendiente");
 
                 String approvalLink = baseUrl + "/api/clients/approve/" + client.getId();
+                String denialLink = baseUrl + "/api/clients/deny/" + client.getId();
 
                 String content = "<p>El cliente <b>" + client.getNombres() + " " + client.getApellidos() + "</b> ha registrado un pago.</p>"
-                        + "<p>Por favor, revisa y aprueba la solicitud en el siguiente enlace:</p>"
-                        + "<a href='" + approvalLink + "'>Aprobar Cliente</a>"
+                        + "<p>Por favor, revisa la solicitud:</p>"
+                        + "<a href='" + approvalLink + "' style='color: green; font-weight: bold;'>Aprobar Cliente</a> | "
+                        + "<a href='" + denialLink + "' style='color: red; font-weight: bold;'>Denegar Cliente</a>"
                         + "<p><b>Imagen del voucher:</b></p>"
                         + "<img src='" + client.getVoucherUrl() + "' width='300'/>";
 
@@ -169,6 +182,30 @@ public class ClientService {
                 mailSender.send(message);
             } catch (MessagingException e) {
                 log.error("🚨 Error al enviar el correo de aprobación: {}", e.getMessage(), e);
+            }
+        });
+    }
+
+    private Mono<Void> sendDeniedNotification(Client client) {
+        return Mono.fromRunnable(() -> {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                helper.setFrom(ADMIN_EMAIL);
+                helper.setTo(client.getCorreo());
+                helper.setSubject("Registro Denegado");
+
+                String content = "<p>Hola <b>" + client.getNombres() + "</b>,</p>"
+                        + "<p>Tu registro no fue aprobado porque el voucher de pago que adjuntaste es erróneo y nunca se procesó.</p>"
+                        + "<p>Por favor, revisa el cobro de tu Yape o banco. Si no se cobraron, vuelve a registrarte en: "
+                        + "<a href='https://sortsortech.azurewebsites.net/'>https://sortsortech.azurewebsites.net/</a></p>"
+                        + "<p>Si se cobró en tu Yape o banco, contáctanos al 977559149 (Luis Acuña) para más información.</p>"
+                        + "<p>Gracias y disculpa las molestias.</p>";
+
+                helper.setText(content, true);
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                log.error("Error al enviar notificación de denegación: {}", e.getMessage(), e);
             }
         });
     }

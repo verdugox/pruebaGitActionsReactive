@@ -30,9 +30,6 @@ public class ClientController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Registra un cliente con la URL de Cloudinary ya generada desde el frontend.
-     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ResponseEntity<Client>> createClient(@RequestBody Client client) {
@@ -42,9 +39,7 @@ public class ClientController {
 
         return service.saveClient(client)
                 .map(savedClient -> ResponseEntity.status(HttpStatus.CREATED).body(savedClient))
-                .onErrorResume(e -> {
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
-                });
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)));
     }
 
     @PutMapping("/{id}")
@@ -52,15 +47,18 @@ public class ClientController {
         return service.updateClient(id, client);
     }
 
-
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteClient(@PathVariable String id) {
         return service.deleteClient(id);
     }
 
-
     @GetMapping("/approve/{id}")
     public Mono<ResponseEntity<Client>> approveClient(@PathVariable String id) {
         return service.approveClient(id);
+    }
+
+    @GetMapping("/deny/{id}")
+    public Mono<ResponseEntity<Client>> denyClient(@PathVariable String id) {
+        return service.denyClient(id);
     }
 }
