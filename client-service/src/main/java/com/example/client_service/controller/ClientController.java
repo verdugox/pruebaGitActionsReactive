@@ -2,6 +2,7 @@ package com.example.client_service.controller;
 
 import com.example.client_service.model.Client;
 import com.example.client_service.service.ClientService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class ClientController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<Client>> createClient(@RequestBody Client client) {
+    public Mono<ResponseEntity<Client>> createClient(@Valid @RequestBody Client client) {
         if (client.getVoucherUrl() == null || client.getVoucherUrl().isEmpty()) {
             return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
         }
@@ -41,6 +42,7 @@ public class ClientController {
                 .map(savedClient -> ResponseEntity.status(HttpStatus.CREATED).body(savedClient))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)));
     }
+
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<Client>> updateClient(@PathVariable String id, @RequestBody Client client) {

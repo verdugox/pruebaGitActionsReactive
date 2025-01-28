@@ -51,12 +51,17 @@ public class ClientService {
     public Mono<Client> saveClient(Client client) {
         client.setEstado("pendiente");
 
-        return repository.save(client)
-                .flatMap(savedClient ->
-                        sendAdminNotification(savedClient)
-                                .thenReturn(savedClient)
-                );
+        return repository.count() // Obtener el número de registros existentes
+                .map(Long::intValue) // Convertir Long a int
+                .map(count -> count + 1) // Incrementar el contador para generar el código único
+                .flatMap(correlativo -> {
+                    client.generarCodigoSortec(correlativo);
+                    return repository.save(client);
+                })
+                .flatMap(savedClient -> sendAdminNotification(savedClient).thenReturn(savedClient));
     }
+
+
 
     /**
      * Elimina el cliente.
