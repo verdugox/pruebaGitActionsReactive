@@ -180,8 +180,16 @@ public class ClientService {
 
                 String content = "<p>Hola <b>" + client.getNombres() + "</b>,</p>"
                         + "<p>Tu registro ha sido aprobado. ¡Gracias por participar en nuestro sorteo!</p>"
+                        + "<p><strong>Tu código generado para el sorteo es: <span style='font-size:18px; color:#1D72F3;'>" + client.getCodigoSortec() + "</span></strong></p>"
+                        + "<p>Este código se usará para realizar el sorteo y podrás revisarlo en la página web:</p>"
+                        + "<p><a href='https://sortsortech.azurewebsites.net/' style='color: #1D72F3; font-weight: bold;'>https://sortsortech.azurewebsites.net/</a></p>"
+                        + "<p>En el listado de participantes aprobados para el sorteo.</p>"
                         + "<p><b>Detalles del sorteo:</b></p>"
-                        + "<img src='" + sorteoImageUrl + "' width='600'/>";
+                        + "<img src='" + sorteoImageUrl + "' width='600'/>"
+                        + "<hr>"
+                        + "<p style='color:#FF5733; font-weight:bold;'>📢 No olvidar revisar la página web de SORTEC:</p>"
+                        + "<p><a href='https://www.facebook.com/people/Sortec/61571509086893/' style='color: #1877F2; font-weight: bold;'>https://www.facebook.com/people/Sortec/61571509086893/</a></p>"
+                        + "<p>👍 Dale <b>'Me gusta'</b> o <b>suscríbete</b> para enterarte de nuevos sorteos y del día en que realizaremos este sorteo.</p>";
 
                 helper.setText(content, true);
                 mailSender.send(message);
@@ -190,6 +198,8 @@ public class ClientService {
             }
         });
     }
+
+
 
     private Mono<Void> sendDeniedNotification(Client client) {
         return Mono.fromRunnable(() -> {

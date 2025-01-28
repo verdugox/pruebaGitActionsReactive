@@ -70,9 +70,9 @@ public class Client {
 
     public void generarCodigoSortec(int correlativo) {
         if (this.nombres != null && this.apellidos != null) {
-            String primerNombre = this.nombres.split(" ")[0].toUpperCase();
-            String primerApellido = this.apellidos.split(" ")[0].toUpperCase();
-            this.codigoSortec = "SORTEC" + primerNombre + "-" + primerApellido + String.format("%03d", correlativo);
+            char inicialNombre = this.nombres.trim().toUpperCase().charAt(0);
+            char inicialApellido = this.apellidos.trim().toUpperCase().charAt(0);
+            this.codigoSortec = "SORTEC" + inicialNombre + inicialApellido + String.format("%03d", correlativo);
         }
     }
 }
