@@ -5,6 +5,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import jakarta.validation.constraints.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Data
 @Document(collection = "clients")
 public class Client {
@@ -64,8 +67,11 @@ public class Client {
 
     private String estado; // pendiente, aprobado
 
+    private String fechaRegistro; // Nuevo campo fechaRegistro
+
     public Client() {
         this.estado = "pendiente";
+        this.fechaRegistro = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 
     public void generarCodigoSortec(int correlativo) {

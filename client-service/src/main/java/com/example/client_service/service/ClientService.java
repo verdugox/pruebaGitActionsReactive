@@ -14,6 +14,9 @@ import jakarta.mail.internet.MimeMessage;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Slf4j
 @Service
 public class ClientService {
@@ -50,6 +53,7 @@ public class ClientService {
      */
     public Mono<Client> saveClient(Client client) {
         client.setEstado("pendiente");
+        client.setFechaRegistro(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
 
         return repository.count() // Obtener el número de registros existentes
                 .map(Long::intValue) // Convertir Long a int
