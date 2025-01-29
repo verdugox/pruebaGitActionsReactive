@@ -67,7 +67,8 @@ public class Client {
 
     private String estado; // pendiente, aprobado
 
-    private String fechaRegistro; // Nuevo campo fechaRegistro
+    // Nuevo campo fechaRegistro
+    private String fechaRegistro;
 
     public Client() {
         this.estado = "pendiente";
