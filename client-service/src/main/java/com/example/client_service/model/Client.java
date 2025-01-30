@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Data
@@ -72,7 +74,7 @@ public class Client {
 
     public Client() {
         this.estado = "pendiente";
-        this.fechaRegistro = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        this.fechaRegistro = ZonedDateTime.now(ZoneId.of("America/Lima")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 
     public void generarCodigoSortec(int correlativo) {
