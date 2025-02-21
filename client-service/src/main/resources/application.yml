@@ -5,7 +5,7 @@ spring:
   data:
     mongodb:
       uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true&retryWrites=true&w=majority
-
+      #uri: mongodb://localhost:27017/clientsdb
   mail:
     host: smtpout.secureserver.net
     port: 465
@@ -35,9 +35,8 @@ app:
 
 logging:
   level:
-    root: INFO
-    org.mongodb.driver: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.data: DEBUG
+    root: ERROR  # 🔹 Solo muestra errores críticos
+    org.springframework.web: ERROR
+    org.springframework.data: ERROR
     org.springframework.boot: INFO
-    reactor: DEBUG
+    reactor: ERROR

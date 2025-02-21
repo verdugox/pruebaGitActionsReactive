@@ -37,9 +37,6 @@ public class Client {
     @Size(max = 250, message = "Se permite máximo 250 caracteres")
     private String direccion;
 
-    @NotBlank(message = "El país es obligatorio")
-    @Size(max = 50, message = "Máximo 50 caracteres")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚ ]+$", message = "Solo caracteres alfabéticos")
     private String pais;
 
     @NotBlank(message = "La provincia es obligatoria")
@@ -64,17 +61,21 @@ public class Client {
     @NotBlank(message = "La URL del voucher es obligatoria")
     private String voucherUrl; // URL de la imagen del voucher
 
-    @NotBlank(message = "La referencia de pago es obligatoria")
     private String referenciaPago;
+
+    private String sexo;
 
     private String estado; // pendiente, aprobado
 
     // Nuevo campo fechaRegistro
     private String fechaRegistro;
 
+    private String rol; // PARTICIPANTE o ADMINISTRADOR
+
     public Client() {
         this.estado = "pendiente";
         this.fechaRegistro = ZonedDateTime.now(ZoneId.of("America/Lima")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        this.rol = "PARTICIPANTE";
     }
 
     public void generarCodigoSortec(int correlativo) {
