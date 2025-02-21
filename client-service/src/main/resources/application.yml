@@ -30,13 +30,13 @@ cloudinary:
   api_secret: "oINQ5aSxA8qO3PPN_Uo02fCoScY"
 
 app:
-  base-url: "http://48.216.202.189"
+  base-url: "https://api.sortsortech.com"
   sorteo-image-url: ${SORTEO_IMAGE_URL:https://res.cloudinary.com/dizkdk1te/image/upload/v1737902820/voucher01_ds91fj.jpg}  # Valor desde GitHub Actions o default
 
 logging:
   level:
-    root: ERROR  # 🔹 Solo muestra errores críticos
-    org.springframework.web: ERROR
-    org.springframework.data: ERROR
+    root: INFO  # 🔹 Solo muestra errores críticos
+    org.springframework.web: INFO
+    org.springframework.data: INFO
     org.springframework.boot: INFO
-    reactor: ERROR
+    reactor: INFO
