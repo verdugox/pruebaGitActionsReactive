@@ -33,8 +33,8 @@ public class SecurityConfig {
                                 "/api/clients",
                                 "/api/sorteos",
                                 "/api/ganadores",
-                                "/api/approve/{id}",          // 🔹 Permitir aprobación de clientes sin autenticación
-                                "/api/approve-payment"       // 🔹 Permitir aprobación de pagos sin autenticación
+                                "/api/payments/approve-payment", // ✅ Permitir sin autenticación
+                                "/api/clients/approve/**"       // ✅ Permitir sin autenticación
                         ).permitAll() // 🔹 Permitir acceso sin autenticación
                         .pathMatchers("/api/menu").authenticated()
                         .pathMatchers("/api/clients/admin/**").hasRole("ADMINISTRADOR")
@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .addFilterAt(new JwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION) // 🔹 Agregar filtro JWT
                 .build();
     }
+
 
 
     @Bean
