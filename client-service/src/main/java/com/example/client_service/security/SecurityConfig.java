@@ -28,23 +28,11 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Se usa configuración separada
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(
-                                "/api/auth/login",
-                                "/api/clients",
-                                "/api/sorteos",
-                                "/api/ganadores",
-                                "/api/payments/approve-payment", // ✅ Permitir sin autenticación
-                                "/api/clients/approve/**"       // ✅ Permitir sin autenticación
-                        ).permitAll() // 🔹 Permitir acceso sin autenticación
-                        .pathMatchers("/api/menu").authenticated()
-                        .pathMatchers("/api/clients/admin/**").hasRole("ADMINISTRADOR")
-                        .pathMatchers("/api/clients/perfil").hasAnyRole("ADMINISTRADOR", "PARTICIPANTE")
-                        .pathMatchers("/api/clients/**").authenticated()
-                        .anyExchange().authenticated()
+                        .anyExchange().permitAll() // 🔹 Permitir acceso sin autenticación a TODOS los endpoints
                 )
-                .addFilterAt(new JwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION) // 🔹 Agregar filtro JWT
                 .build();
     }
+
 
 
 
