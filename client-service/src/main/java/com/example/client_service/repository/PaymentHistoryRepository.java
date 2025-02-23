@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono;
 public interface PaymentHistoryRepository extends ReactiveMongoRepository<PaymentHistory, String> {
     Flux<PaymentHistory> findByClientId(String clientId);
 
+    Flux<PaymentHistory> findByDni(String dni);
+
     // 🔹 Buscar el último pago con estado "pendiente" de un cliente
     @Query("{ 'clientId': ?0, 'estado': 'pendiente' }")
     Mono<PaymentHistory> findLastPendingPayment(String clientId);

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  namespace: ingress-nginx  # ✅ Ahora en el namespace correcto
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"  # Solo si usas cert-manager para HTTPS
+spec:
+  tls:
+    - hosts:
+        - api.sortsortech.com
+      secretName: sortsortech-tls
+  rules:
+    - host: api.sortsortech.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: springboot-app-service  # ✅ Asegúrate de que este sea el servicio correcto
+                port:
+                  number: 80

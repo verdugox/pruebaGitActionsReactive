@@ -35,6 +35,7 @@ public class SorteoService {
         return repository.findById(id)
                 .flatMap(existingSorteo -> {
                     existingSorteo.setTitulo(updatedSorteo.getTitulo());
+                    existingSorteo.setDescripcion(updatedSorteo.getDescripcion());
                     existingSorteo.setImagenUrl(updatedSorteo.getImagenUrl());
                     existingSorteo.setFechaSorteo(updatedSorteo.getFechaSorteo());
                     existingSorteo.setEstado(updatedSorteo.getEstado());

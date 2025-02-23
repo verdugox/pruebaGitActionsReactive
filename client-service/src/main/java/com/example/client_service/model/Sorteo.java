@@ -15,6 +15,8 @@ public class Sorteo {
     @NotBlank(message = "El título del sorteo es obligatorio")
     private String titulo;
 
+    private String descripcion;
+
     @NotBlank(message = "La URL de la imagen es obligatoria")
     private String imagenUrl;
 

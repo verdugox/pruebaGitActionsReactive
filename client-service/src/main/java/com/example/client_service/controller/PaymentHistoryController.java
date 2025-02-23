@@ -87,6 +87,11 @@ public class PaymentHistoryController {
         return service.getPaymentsByClientId(clientId);
     }
 
+    @GetMapping("/dni/{dni}")
+    public Flux<PaymentHistory> getPaymentByDni(@PathVariable String dni) {
+        return service.getPaymentsByDni(dni);
+    }
+
     @PostMapping("/register-payment")
     public Mono<ResponseEntity<PaymentHistory>> registerNewPayment(@RequestBody PaymentRequest paymentRequest) {
         return clientRepository.findById(paymentRequest.getClientId())

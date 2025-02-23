@@ -42,6 +42,9 @@ public class PaymentHistoryService {
     public Flux<PaymentHistory> getPaymentsByClientId(String clientId) {
         return repository.findByClientId(clientId);
     }
+    public Flux<PaymentHistory> getPaymentsByDni(String dni) {
+        return repository.findByDni(dni);
+    }
 
 
 }
