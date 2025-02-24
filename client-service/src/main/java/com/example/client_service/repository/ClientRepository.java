@@ -8,4 +8,7 @@ public interface ClientRepository extends ReactiveMongoRepository<Client, String
     Mono<Client> findByDni(String dni);
     Mono<Client> findByCodigoSortecIgnoreCase(String codigoSortec);
 
+    Mono<Client> findByDniOrCorreo(String dni, String correo);
+
+
 }

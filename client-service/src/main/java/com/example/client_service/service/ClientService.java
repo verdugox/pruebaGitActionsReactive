@@ -68,31 +68,46 @@ public class ClientService {
             return Mono.error(new IllegalArgumentException("El voucher de pago es obligatorio."));
         }
 
-        client.setEstado("pendiente");
-        client.setFechaRegistro(ZonedDateTime.now(ZoneId.of("America/Lima"))
-                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-
-        return repository.count()
-                .map(Long::intValue)
-                .map(count -> count + 1)
-                .flatMap(correlativo -> {
-                    client.generarCodigoSortec(correlativo);
-                    return repository.save(client);
+        return repository.findByDniOrCorreo(client.getDni(), client.getCorreo())
+                .flatMap(existingClient -> {
+                    String mensajeError = existingClient.getDni().equals(client.getDni())
+                            ? "Ya existe un cliente registrado con este DNI."
+                            : "Ya existe un cliente registrado con este correo.";
+                    return Mono.error(new IllegalArgumentException(mensajeError));
                 })
-                .flatMap(savedClient -> {
-                    PaymentHistory payment = new PaymentHistory();
-                    payment.setClientId(savedClient.getId());
-                    payment.setDni(savedClient.getDni());
-                    payment.setVoucherUrl(savedClient.getVoucherUrl());
-                    payment.setMonto(8.0);
-                    payment.setEstado("pendiente");
-                    payment.setFechaPago(ZonedDateTime.now(ZoneId.of("America/Lima")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                .cast(Client.class)
+                .switchIfEmpty(Mono.defer(() -> {
+                    client.setEstado("pendiente");
+                    client.setFechaRegistro(ZonedDateTime.now(ZoneId.of("America/Lima"))
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
 
-                    return paymentHistoryRepository.save(payment)
-                            .then(sendAdminNotification(savedClient)) // Notificación para la primera vez
-                            .thenReturn(savedClient);
-                });
+                    return repository.count()
+                            .map(Long::intValue)
+                            .map(count -> count + 1)
+                            .flatMap(correlativo -> {
+                                client.generarCodigoSortec(correlativo);
+                                return repository.save(client);
+                            })
+                            .flatMap(savedClient -> {
+                                PaymentHistory payment = new PaymentHistory();
+                                payment.setClientId(savedClient.getId());
+                                payment.setDni(savedClient.getDni());
+                                payment.setVoucherUrl(savedClient.getVoucherUrl());
+                                payment.setMonto(8.0);
+                                payment.setEstado("pendiente");
+                                payment.setFechaPago(ZonedDateTime.now(ZoneId.of("America/Lima"))
+                                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+
+                                return paymentHistoryRepository.save(payment)
+                                        .then(sendAdminNotification(savedClient))
+                                        .thenReturn(savedClient);
+                            });
+                }))
+                .doOnError(error -> log.error("Error al guardar el cliente: {}", error.getMessage(), error)); // Log de error
     }
+
+
+
 
 
 

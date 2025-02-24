@@ -5,6 +5,7 @@ import com.example.client_service.security.JwtUtil;
 import com.example.client_service.service.ClientService;
 import com.example.client_service.service.MenuService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
@@ -45,15 +47,28 @@ public class ClientController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<Client>> createClient(@Valid @RequestBody Client client) {
+    public Mono<ResponseEntity<Object>> createClient(@Valid @RequestBody Client client) {
         if (client.getVoucherUrl() == null || client.getVoucherUrl().isEmpty()) {
-            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
+            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "El voucher de pago es obligatorio.")));
         }
 
         return service.saveClient(client)
-                .map(savedClient -> ResponseEntity.status(HttpStatus.CREATED).body(savedClient))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)));
+                .map(savedClient -> ResponseEntity.status(HttpStatus.CREATED).body((Object) savedClient))
+                .onErrorResume(IllegalArgumentException.class, e -> {
+                    log.error("Error de validación: {}", e.getMessage());
+                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", e.getMessage())));
+                })
+                .onErrorResume(Exception.class, e -> {
+                    log.error("Error inesperado en el servidor: {}", e.getMessage(), e);
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(Map.of("error", "Error interno del servidor. Detalles: " + e.getMessage())));
+                });
     }
+
+
+
 
 
     @PutMapping("/{id}")
