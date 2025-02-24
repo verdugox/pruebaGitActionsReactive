@@ -307,7 +307,7 @@ public class ClientService {
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
                 helper.setTo(client.getCorreo());
-                helper.setSubject("Registro Denegado");
+                helper.setSubject("Registro Denegado - SORTEC");
 
                 String content = "<p>Hola <b>" + client.getNombres() + "</b>,</p>"
                         + "<p>Tu registro no fue aprobado porque el voucher de pago que adjuntaste es erróneo y nunca se procesó.</p>"
@@ -388,7 +388,7 @@ public class ClientService {
         return repository.findAll()
                 .flatMap(client -> paymentHistoryRepository.findByClientId(client.getId())
                         .collectList()
-                            .flatMap(payments -> {
+                        .flatMap(payments -> {
                             if (payments.isEmpty()) {
                                 return Mono.empty();
                             }
@@ -403,7 +403,14 @@ public class ClientService {
                             }
 
                             ZonedDateTime fechaUltimoPago = ZonedDateTime.parse(lastPayment.getFechaPago(), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima")));
+                            int diaOriginal = fechaUltimoPago.getDayOfMonth();
                             ZonedDateTime fechaVencimiento = fechaUltimoPago.plusMonths(1);
+
+                            // ✅ Ajustar si el mes siguiente no tiene el mismo día
+                            if (fechaVencimiento.getDayOfMonth() != diaOriginal) {
+                                fechaVencimiento = fechaVencimiento.withDayOfMonth(fechaVencimiento.getMonth().length(fechaVencimiento.toLocalDate().isLeapYear()));
+                            }
+
                             ZonedDateTime fechaNotificacion3Dias = fechaVencimiento.minusDays(3);
                             ZonedDateTime fechaNotificacion2Dias = fechaVencimiento.minusDays(2);
                             ZonedDateTime fechaNotificacion1Dia = fechaVencimiento.minusDays(1);
@@ -428,6 +435,7 @@ public class ClientService {
                         })
                 ).then();
     }
+
 
     private Mono<Void> sendPaymentReminder(Client client, String message) {
         return Mono.fromRunnable(() -> {
@@ -642,21 +650,28 @@ public class ClientService {
                             ZonedDateTime fechaUltimoPago = ZonedDateTime.parse(lastPayment.getFechaPago(),
                                     DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
                                             .withZone(ZoneId.of("America/Lima")));
+                            int diaOriginal = fechaUltimoPago.getDayOfMonth();
                             ZonedDateTime fechaVencimiento = fechaUltimoPago.plusMonths(1);
+
+                            // ✅ Ajustar si el mes siguiente no tiene el mismo día
+                            if (fechaVencimiento.getDayOfMonth() != diaOriginal) {
+                                fechaVencimiento = fechaVencimiento.withDayOfMonth(fechaVencimiento.getMonth().length(fechaVencimiento.toLocalDate().isLeapYear()));
+                            }
+
                             ZonedDateTime fechaNotificacion3Dias = fechaVencimiento.minusDays(3);
                             ZonedDateTime fechaNotificacion2Dias = fechaVencimiento.minusDays(2);
                             ZonedDateTime fechaNotificacion1Dia = fechaVencimiento.minusDays(1);
                             ZonedDateTime ahora = ZonedDateTime.now(ZoneId.of("America/Lima"));
                             ZonedDateTime fechaHaceUnMes = ahora.minusMonths(1);
 
-                            // Clientes que están por vencer su suscripción
+                            // ✅ Enviar recordatorio a clientes que están por vencer su suscripción
                             if ((ahora.isAfter(fechaNotificacion3Dias) && ahora.isBefore(fechaNotificacion2Dias)) ||
                                     (ahora.isAfter(fechaNotificacion2Dias) && ahora.isBefore(fechaNotificacion1Dia)) ||
                                     (ahora.isAfter(fechaNotificacion1Dia) && ahora.isBefore(fechaVencimiento))) {
                                 return sendEmail(client.getCorreo(), subject, message, imageUrls);
                             }
 
-                            // Clientes cuya suscripción ya venció hace más de 1 mes
+                            // ✅ Enviar recordatorio a clientes cuya suscripción ya venció hace más de 1 mes
                             if (fechaUltimoPago.isBefore(fechaHaceUnMes)) {
                                 String emailSubject = "📢 ¡Tu suscripción ha vencido! 🔔 - SORTEC";
                                 String emailMessage = "<p style='font-size: 18px;'>👋 Hola <b>" + client.getNombres() + "</b>,</p>"
@@ -680,11 +695,11 @@ public class ClientService {
                                 return sendEmail(client.getCorreo(), emailSubject, emailMessage, imageUrls);
                             }
 
-
                             return Mono.empty();
                         })
                 ).then();
     }
+
 
 
 
