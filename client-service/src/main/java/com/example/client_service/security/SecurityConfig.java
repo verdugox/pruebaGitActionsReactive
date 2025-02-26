@@ -26,15 +26,15 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Se usa configuración separada
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Configuración CORS actualizada
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(
                                 "/api/auth/login",
                                 "/api/clients",
                                 "/api/sorteos",
                                 "/api/ganadores",
-                                "/api/payments/approve-payment", // ✅ Permitir sin autenticación
-                                "/api/clients/approve/**"       // ✅ Permitir sin autenticación
+                                "/api/payments/approve-payment",
+                                "/api/clients/approve/**"
                         ).permitAll() // 🔹 Permitir acceso sin autenticación
                         .pathMatchers("/api/menu").authenticated()
                         .pathMatchers("/api/clients/admin/**").hasRole("ADMINISTRADOR")
@@ -46,8 +46,6 @@ public class SecurityConfig {
                 .build();
     }
 
-
-
     @Bean
     public CorsWebFilter corsWebFilter() {
         return new CorsWebFilter(corsConfigurationSource());
@@ -56,7 +54,10 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(List.of("http://localhost:3000")); // 🔹 Permitir solo el frontend
+        corsConfig.setAllowedOrigins(List.of(
+                "http://localhost:3000",   // ✅ Permitir en desarrollo
+                "https://sortsortech.azurewebsites.net" // ✅ Permitir en producción
+        ));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         corsConfig.setAllowCredentials(true); // 🔹 Permitir credenciales (tokens, cookies, etc.)
