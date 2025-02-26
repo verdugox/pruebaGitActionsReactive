@@ -121,7 +121,7 @@ jobs:
                   - name: CLOUDINARY_API_SECRET
                     value: "${{ secrets.CLOUDINARY_API_SECRET }}"
                   - name: APP_BASE_URL
-                    value: "http://4.246.233.242"
+                    value: "https://api.sorteosc.com"
                   - name: SORTEO_IMAGE_URL
                     value: "${{ secrets.SORTEO_IMAGE_URL }}"
           ---

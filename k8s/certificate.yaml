@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sorteosc-tls
+  namespace: ingress-nginx
+spec:
+  secretName: sorteosc-tls  # El nombre del secreto generado por el certificado
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - api.sorteosc.com

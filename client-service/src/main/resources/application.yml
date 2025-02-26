@@ -30,7 +30,7 @@ cloudinary:
   api_secret: "oINQ5aSxA8qO3PPN_Uo02fCoScY"
 
 app:
-  base-url: "http://4.246.233.242"
+  base-url: "https://api.sorteosc.com"
   sorteo-image-url: ${SORTEO_IMAGE_URL:https://res.cloudinary.com/dizkdk1te/image/upload/v1737902820/voucher01_ds91fj.jpg}  # Valor desde GitHub Actions o default
 
 logging:
