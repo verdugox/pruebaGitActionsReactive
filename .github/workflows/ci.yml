@@ -121,7 +121,7 @@ jobs:
                   - name: CLOUDINARY_API_SECRET
                     value: "${{ secrets.CLOUDINARY_API_SECRET }}"
                   - name: APP_BASE_URL
-                    value: "http://48.216.202.189"
+                    value: "http://4.246.233.242"
                   - name: SORTEO_IMAGE_URL
                     value: "${{ secrets.SORTEO_IMAGE_URL }}"
           ---
@@ -153,10 +153,10 @@ jobs:
             ingressClassName: nginx
             tls:
             - hosts:
-              - api.sortsortech.com
-              secretName: sortsortech-tls
+              - api.sorteosc.com
+              secretName: sorteosc-tls
             rules:
-            - host: api.sortsortech.com
+            - host: api.sorteosc.com
               http:
                 paths:
                 - path: /api

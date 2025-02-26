@@ -359,28 +359,101 @@ public class ClientService {
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
                 helper.setTo(client.getCorreo());
-                helper.setSubject("🎉💖 ¡Primer Sorteo de SORTEC! 💖🎉");
+                helper.setSubject("📢 ¡Bienvenidos al nuevo sistema de SORTEC! 🎉🎊");
 
-                String content = "<p style='font-size: 24px; font-weight: bold; text-align: center;'>🔥🎉 ¡HOY ES EL GRAN DÍA! 🎉🔥</p>"
-                        + "<p style='font-size: 20px; text-align: center;'>🎥💥 ¡No te pierdas nuestra <strong>TRANSMISIÓN EN VIVO</strong>! 💥🎥</p>"
-                        + "<p style='font-size: 18px; text-align: center;'>⌚ <strong>Hora:</strong> 8:00 PM</p>"
-                        + "<p style='text-align: center;'>🎁🎧 <strong>¡SORTEAREMOS GRANDES PREMIOS!</strong> 🎧🎁</p>"
-                        + "<p style='text-align: center;'>💖 Una <strong>CAJA SORPRESA DE SAN VALENTÍN</strong> 💝</p>"
-                        + "<p style='text-align: center;'>🎧 Unos <strong>Audífonos Redragon Gamer</strong> 🔥</p>"
-                        + "<p style='text-align: center;'><a href='https://www.facebook.com/1686884439/videos/3485890091707335/' style='font-size: 20px; color: red; font-weight: bold;'>📺 ¡ÚNETE A LA TRANSMISIÓN EN VIVO AQUÍ! 📺</a></p>"
-                        + "<p style='text-align: center;'>🎊 ¡No dejes pasar esta oportunidad de ganar! 🎊</p>"
-                        + "<p style='text-align: center;'>🔥✨ <strong>#SanValentín #SorteoGamer #SorteoEspecial #JOJOLI</strong> ✨🔥</p>"
-                        + "<p style='text-align: center;'><img src='https://res.cloudinary.com/dizkdk1te/image/upload/v1739492510/SortecVoucher/xkronba76dvdjd8gtjlo.jpg' width='600'/></p>"
-                        + "<p style='text-align: center;'><strong>🎁 PREMIOS 🎁</strong></p>"
-                        + "<p style='text-align: center;'><img src='https://res.cloudinary.com/dizkdk1te/image/upload/v1738791941/SortecVoucher/vkzsamliggvmfcqc4jsz.jpg' width='300'/> "
-                        + "<img src='https://res.cloudinary.com/dizkdk1te/image/upload/v1738369048/SortecVoucher/btbemydt5yrmwhuvbxty.jpg' width='300'/></p>";
+                String content = "<p style='font-size: 24px; font-weight: bold; text-align: center;'>📢 ¡Bienvenidos a SORTEC! 🎉🎊</p>"
+                        + "<p style='font-size: 20px; text-align: center;'>🚀 Tu portal de sorteos exclusivos 🚀</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>Nos alegra mucho que formes parte de <b>SORTEC</b> 🎁✨</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>Queremos asegurarnos de que tengas <b>el control total</b> sobre tu suscripción y disfrutes de todas las oportunidades 🎊</p>"
+
+                        // 🔹 PASOS PARA INICIAR SESIÓN
+                        + "<h2 style='text-align: center;'>🔹 PASOS PARA INICIAR SESIÓN 🔹</h2>"
+                        + "<p><b>💡 Sigue estos pasos sencillos para acceder a tu cuenta:</b></p>"
+                        + "<ol style='font-size: 18px;'>"
+                        + "  <li>🌐 <b>Ingresa a:</b> <a href='https://sortsortech.azurewebsites.net/' target='_blank'>SORTEC</a></li>"
+                        + "  <li>🔑 <b>Haz clic en 'Iniciar Sesión'</b> en el menú superior.</li>"
+                        + "  <li>🆔 <b>Usuario:</b> Tu número de DNI</li>"
+                        + "  <li>🔒 <b>Contraseña:</b> Tu Código Sortec enviado por correo 📩</li>"
+                        + "</ol>"
+                        + "<p style='font-size: 18px;'><b>🚀 ¡Listo! Ahora puedes ver los detalles de tu suscripción.</b></p>"
+
+                        // 🔍 ¿QUÉ PUEDES HACER EN TU CUENTA?
+                        + "<h2 style='text-align: center;'>👀 ¿QUÉ PUEDES HACER EN TU CUENTA? 🔍</h2>"
+                        + "<ul style='font-size: 18px;'>"
+                        + "  <li>📋 <b>Ver tu información personal:</b></li>"
+                        + "  <ul>"
+                        + "    <li>🗓️ Desde qué fecha te registraste</li>"
+                        + "    <li>⏳ Fecha exacta de vencimiento de tu suscripción</li>"
+                        + "    <li>🔢 Cálculo de los días transcurridos desde tu registro</li>"
+                        + "  </ul>"
+                        + "  <li>📜 <b>Acceder a 'Ver Suscripción':</b> Historial de pagos y descarga de boletas 🧾</li>"
+                        + "  <li>⚙️ <b>Actualizar tu perfil en 'Configurar Perfil'</b> 📌</li>"
+                        + "  <li>💳 <b>Gestionar tu suscripción:</b> Tu suscripción dura 1 mes desde el último pago 🗓️</li>"
+                        + "  <li>📢 Recibirás notificaciones cuando esté próximo a vencer</li>"
+                        + "</ul>"
+
+                        // 🔄 Renovar Suscripción
+                        + "<h2 style='text-align: center;'>✅ ¡Renovar tu suscripción fácilmente! 🔄</h2>"
+                        + "<p style='font-size: 18px;'>Cuando tu suscripción venza:</p>"
+                        + "<ul style='font-size: 18px;'>"
+                        + "  <li>🔄 <b>Haz clic en 'Renovar Suscripción'</b></li>"
+                        + "  <li>💵 Adjunta tu voucher de pago</li>"
+                        + "  <li>✅ Confirma tu pago</li>"
+                        + "</ul>"
+                        + "<p style='font-size: 18px;'>🏆 ¡Tu cuenta quedará activada por un mes más!</p>"
+
+                        // ❌ Eliminar suscripción
+                        + "<h2 style='text-align: center;'>❌ ¿Quieres eliminar tu suscripción?</h2>"
+                        + "<p style='font-size: 18px;'>Si ya no deseas participar en los sorteos:</p>"
+                        + "<ul style='font-size: 18px;'>"
+                        + "  <li>🔥 Haz clic en <b>'Eliminar Suscripción'</b></li>"
+                        + "  <li>🔄 Si deseas volver, tendrás que registrarte nuevamente</li>"
+                        + "</ul>"
+
+                        // 🏡 Navegar en la página
+                        + "<h2 style='text-align: center;'>🏡 Navega fácilmente en SORTEC</h2>"
+                        + "<p style='font-size: 18px;'>Puedes acceder a cualquier sección:</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>"
+                        + "🏠 <b>Inicio</b> | 🎟️ <b>Sorteos</b> | 🎁 <b>Beneficios</b> | 🛍️ <b>Tienda</b> | 🎮 <b>Juegos</b> | 🏆 <b>Ganadores</b>"
+                        + "</p>"
+
+                        // 🎉 Explorar sorteos y ganadores
+                        + "<h2 style='text-align: center;'>🎉 Explorar sorteos y ganadores</h2>"
+                        + "<ul style='font-size: 18px;'>"
+                        + "  <li>📢 <b>'Sorteos':</b> Encuentra los sorteos activos</li>"
+                        + "  <li>🎊 <b>'Ganadores':</b> Revisa quiénes han ganado premios</li>"
+                        + "</ul>"
+
+                        // 🚀 Próximamente...
+                        + "<h2 style='text-align: center;'>🚀 Próximamente...</h2>"
+                        + "<p style='font-size: 18px;'>Estamos trabajando en más opciones como:</p>"
+                        + "<ul style='font-size: 18px;'>"
+                        + "  <li>🎁 <b>Beneficios</b></li>"
+                        + "  <li>🛍️ <b>Tienda</b></li>"
+                        + "  <li>🎮 <b>Juegos</b></li>"
+                        + "</ul>"
+
+                        // 📲 Redes Sociales
+                        + "<h2 style='text-align: center;'>🌟 ¡Únete a nuestra comunidad en Facebook! 🌟</h2>"
+                        + "<p style='font-size: 18px;'>Síguenos y comparte con tus amigos 💙</p>"
+                        + "<p style='text-align: center;'>"
+                        + "<a href='https://www.facebook.com/profile.php?id=61571509086893' target='_blank' style='font-size: 20px; color: blue; font-weight: bold;'>📲 Dale 'Me Gusta' en Facebook</a>"
+                        + "</p>"
+
+                        // 🚀 Despedida
+                        + "<h2 style='text-align: center;'>✨ ¡Gracias por ser parte de la familia SORTEC S.A.C.! ✨</h2>"
+                        + "<p style='font-size: 18px; text-align: center;'>📢 ¡Cuantos más seamos, más sorteos podremos hacer! 🎊</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>📩 Cualquier duda, contáctanos. ¡Estamos para ayudarte!</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>Atentamente, <b>🎯 El equipo de SORTEC S.A.C. 🚀</b></p>";
+
                 helper.setText(content, true);
                 mailSender.send(message);
             } catch (MessagingException e) {
-                log.error("Error al enviar correo de San Valentín: {}", e.getMessage(), e);
+                log.error("Error al enviar correo de bienvenida: {}", e.getMessage(), e);
             }
         });
     }
+
 
 
     @Scheduled(cron = "0 0 12 * * ?")

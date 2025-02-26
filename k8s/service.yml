@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-app-service
+  namespace: default
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"springboot-app-service","namespace":"default"},"spec":{"ports":[{"port":80,"targetPort":8086}],"selector":{"app":"springboot-app"},"type":"LoadBalancer"}}
+  finalizers:
+    - service.kubernetes.io/load-balancer-cleanup
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  allocateLoadBalancerNodePorts: true
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  selector:
+    app: springboot-app  # 👈 Asegúrate de que coincide con el label del pod
+  ports:
+    - protocol: TCP
+      port: 80         # 👈 Puerto expuesto al Ingress
+      targetPort: 8086  # 👈 Puerto en el que escucha el contenedor
+      nodePort: 32375  # 👈 Manteniendo el mismo nodePort existente
+status:
+  loadBalancer:
+    ingress:
+      - ip: 48.216.202.189
+        ipMode: VIP
