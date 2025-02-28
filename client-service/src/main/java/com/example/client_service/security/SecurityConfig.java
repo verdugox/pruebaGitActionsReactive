@@ -29,13 +29,15 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Configuración CORS actualizada
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(HttpMethod.PUT, "/api/payments/approve-payment", "/api/payments/approve-payment/**").permitAll() // ✅ Permitir sin autenticación
+                        .pathMatchers(HttpMethod.GET, "/api/payments/approve-payment", "/api/payments/approve-payment/**").permitAll() // ✅ Permitir sin autenticación
                         .pathMatchers(
                                 "/api/auth/login",
                                 "/api/clients",
                                 "/api/sorteos",
                                 "/api/ganadores",
-                                "/api/clients/approve/**"
+                                "/api/clients/approve/**",
+                                "/api/payments/approve-payment",
+                                "/api/payments/approve-payment/**"
                         ).permitAll() // 🔹 Permitir acceso sin autenticación
                         .pathMatchers("/api/menu").authenticated()
                         .pathMatchers("/api/clients/admin/**").hasRole("ADMINISTRADOR")

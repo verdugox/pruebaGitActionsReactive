@@ -131,14 +131,8 @@ public class PaymentHistoryController {
 
 
 
-    @PutMapping("/approve-payment")
-    public Mono<ResponseEntity<PaymentHistory>> approvePayment(@RequestBody Map<String, String> request) {
-        String clientId = request.get("clientId");
-
-        if (clientId == null || clientId.isEmpty()) {
-            return Mono.just(ResponseEntity.badRequest().build());
-        }
-
+    @GetMapping("/approve-payment/{clientId}")
+    public Mono<ResponseEntity<PaymentHistory>> approvePayment(@PathVariable String clientId) {
         return paymentHistoryRepository.findLastPendingPayment(clientId)
                 .flatMap(payment -> {
                     if ("pagado".equals(payment.getEstado())) {
@@ -149,12 +143,15 @@ public class PaymentHistoryController {
                     payment.setFechaPago(ZonedDateTime.now(ZoneId.of("America/Lima")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
 
                     return paymentHistoryRepository.save(payment)
-                            .flatMap(updatedPayment -> clientRepository.findById(payment.getClientId())
-                                    .flatMap(client -> clientService.sendPaymentApprovalNotification(client)
-                                            .thenReturn(ResponseEntity.ok(updatedPayment))));
+                            .flatMap(updatedPayment ->
+                                    clientRepository.findById(payment.getClientId())
+                                            .flatMap(client -> clientService.sendPaymentApprovalNotification(client)
+                                                    .thenReturn(ResponseEntity.ok(updatedPayment))
+                                            ));
                 })
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
 
 
 

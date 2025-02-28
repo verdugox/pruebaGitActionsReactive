@@ -32,12 +32,6 @@ public class JwtAuthenticationFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
-        String path = request.getURI().getPath();
-
-        if (path.equals("/api/payments/approve-payment") || path.startsWith("/api/payments/approve-payment/")) {
-            System.out.println("🔹 Endpoint /api/payments/approve-payment bypass JWT Authentication");
-            return chain.filter(exchange);
-        }
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
