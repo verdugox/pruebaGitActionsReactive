@@ -2,6 +2,7 @@ package com.example.client_service.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -28,12 +29,12 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Configuración CORS actualizada
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers(HttpMethod.PUT, "/api/payments/approve-payment").permitAll() // ✅ Permitir sin autenticación
                         .pathMatchers(
                                 "/api/auth/login",
                                 "/api/clients",
                                 "/api/sorteos",
                                 "/api/ganadores",
-                                "/api/payments/approve-payment",
                                 "/api/clients/approve/**"
                         ).permitAll() // 🔹 Permitir acceso sin autenticación
                         .pathMatchers("/api/menu").authenticated()
@@ -42,7 +43,7 @@ public class SecurityConfig {
                         .pathMatchers("/api/clients/**").authenticated()
                         .anyExchange().authenticated()
                 )
-                .addFilterAt(new JwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION) // 🔹 Agregar filtro JWT
+                .addFilterAt(new JwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
