@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Configuración CORS actualizada
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(HttpMethod.PUT, "/api/payments/approve-payment").permitAll() // ✅ Permitir sin autenticación
+                        .pathMatchers(HttpMethod.PUT, "/api/payments/approve-payment", "/api/payments/approve-payment/**").permitAll() // ✅ Permitir sin autenticación
                         .pathMatchers(
                                 "/api/auth/login",
                                 "/api/clients",
@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .addFilterAt(new JwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
+
 
     @Bean
     public CorsWebFilter corsWebFilter() {
@@ -68,4 +69,5 @@ public class SecurityConfig {
 
         return source;
     }
+
 }

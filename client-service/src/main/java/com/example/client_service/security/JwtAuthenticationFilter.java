@@ -34,8 +34,8 @@ public class JwtAuthenticationFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        // 🔹 Excluir el endpoint `/api/payments/approve-payment` del filtro JWT
-        if (path.equals("/api/payments/approve-payment")) {
+        if (path.equals("/api/payments/approve-payment") || path.startsWith("/api/payments/approve-payment/")) {
+            System.out.println("🔹 Endpoint /api/payments/approve-payment bypass JWT Authentication");
             return chain.filter(exchange);
         }
 
@@ -72,4 +72,5 @@ public class JwtAuthenticationFilter implements WebFilter {
             return exchange.getResponse().setComplete();
         }
     }
+
 }
