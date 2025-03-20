@@ -175,7 +175,19 @@ public class ClientController {
                         .body("Error al enviar recordatorios: " + e.getMessage())));
     }
 
+    @PostMapping("/send-mass-whatsapp")
+    public Mono<ResponseEntity<String>> sendMassWhatsApp(@RequestBody Map<String, String> request) {
+        String message = request.get("message");
 
+        if (message == null || message.trim().isEmpty()) {
+            return Mono.just(ResponseEntity.badRequest().body("El mensaje no puede estar vacío"));
+        }
+
+        return service.sendMassWhatsAppMessage(message)
+                .then(Mono.just(ResponseEntity.ok("Mensajes enviados exitosamente por WhatsApp.")))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500)
+                        .body("Error al enviar mensajes de WhatsApp: " + e.getMessage())));
+    }
 
 
 

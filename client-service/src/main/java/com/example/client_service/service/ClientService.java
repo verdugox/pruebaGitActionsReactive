@@ -17,6 +17,11 @@ import jakarta.mail.internet.MimeMessage;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -34,7 +39,14 @@ public class ClientService {
     @Value("${app.base-url}")
     private String baseUrl; // URL dinámica tomada desde application.yml
 
+    @Value("${whatsapp.token}")
+    private String whatsappToken;
 
+    @Value("${whatsapp.phone-number-id}")
+    private String phoneNumberId;
+
+    @Value("${whatsapp.api-url}")
+    private String whatsappApiUrl;
 
     private static final String ADMIN_EMAIL = "administrador@sorteosc.com";
 
@@ -359,91 +371,29 @@ public class ClientService {
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
                 helper.setTo(client.getCorreo());
-                helper.setSubject("📢 ¡Bienvenidos al nuevo sistema de SORTEC! 🎉🎊");
+                helper.setSubject("🎉🎊 ¡TRANSMISION EN VIVO - SORTEC - SORTEO 28/02/2025! 🎊🎉");
 
-                String content = "<p style='font-size: 24px; font-weight: bold; text-align: center;'>📢 ¡Bienvenidos a SORTEC! 🎉🎊</p>"
-                        + "<p style='font-size: 20px; text-align: center;'>🚀 Tu portal de sorteos exclusivos 🚀</p>"
+                String content = "<p style='font-size: 24px; font-weight: bold; text-align: center;'>🎉 ¡Bienvenido a SORTEC! 🎊</p>"
+                        + "<p style='font-size: 20px; text-align: center;'>🚀 Tu portal exclusivo de sorteos 🚀</p>"
                         + "<p style='font-size: 18px; text-align: center;'>Nos alegra mucho que formes parte de <b>SORTEC</b> 🎁✨</p>"
-                        + "<p style='font-size: 18px; text-align: center;'>Queremos asegurarnos de que tengas <b>el control total</b> sobre tu suscripción y disfrutes de todas las oportunidades 🎊</p>"
-
-                        // 🔹 PASOS PARA INICIAR SESIÓN
-                        + "<h2 style='text-align: center;'>🔹 PASOS PARA INICIAR SESIÓN 🔹</h2>"
-                        + "<p><b>💡 Sigue estos pasos sencillos para acceder a tu cuenta:</b></p>"
-                        + "<ol style='font-size: 18px;'>"
-                        + "  <li>🌐 <b>Ingresa a:</b> <a href='https://sortsortech.azurewebsites.net/' target='_blank'>SORTEC</a></li>"
-                        + "  <li>🔑 <b>Haz clic en 'Iniciar Sesión'</b> en el menú superior.</li>"
-                        + "  <li>🆔 <b>Usuario:</b> Tu número de DNI</li>"
-                        + "  <li>🔒 <b>Contraseña:</b> Tu Código Sortec enviado por correo 📩</li>"
-                        + "</ol>"
-                        + "<p style='font-size: 18px;'><b>🚀 ¡Listo! Ahora puedes ver los detalles de tu suscripción.</b></p>"
-
-                        // 🔍 ¿QUÉ PUEDES HACER EN TU CUENTA?
-                        + "<h2 style='text-align: center;'>👀 ¿QUÉ PUEDES HACER EN TU CUENTA? 🔍</h2>"
-                        + "<ul style='font-size: 18px;'>"
-                        + "  <li>📋 <b>Ver tu información personal:</b></li>"
-                        + "  <ul>"
-                        + "    <li>🗓️ Desde qué fecha te registraste</li>"
-                        + "    <li>⏳ Fecha exacta de vencimiento de tu suscripción</li>"
-                        + "    <li>🔢 Cálculo de los días transcurridos desde tu registro</li>"
-                        + "  </ul>"
-                        + "  <li>📜 <b>Acceder a 'Ver Suscripción':</b> Historial de pagos y descarga de boletas 🧾</li>"
-                        + "  <li>⚙️ <b>Actualizar tu perfil en 'Configurar Perfil'</b> 📌</li>"
-                        + "  <li>💳 <b>Gestionar tu suscripción:</b> Tu suscripción dura 1 mes desde el último pago 🗓️</li>"
-                        + "  <li>📢 Recibirás notificaciones cuando esté próximo a vencer</li>"
-                        + "</ul>"
-
-                        // 🔄 Renovar Suscripción
-                        + "<h2 style='text-align: center;'>✅ ¡Renovar tu suscripción fácilmente! 🔄</h2>"
-                        + "<p style='font-size: 18px;'>Cuando tu suscripción venza:</p>"
-                        + "<ul style='font-size: 18px;'>"
-                        + "  <li>🔄 <b>Haz clic en 'Renovar Suscripción'</b></li>"
-                        + "  <li>💵 Adjunta tu voucher de pago</li>"
-                        + "  <li>✅ Confirma tu pago</li>"
-                        + "</ul>"
-                        + "<p style='font-size: 18px;'>🏆 ¡Tu cuenta quedará activada por un mes más!</p>"
-
-                        // ❌ Eliminar suscripción
-                        + "<h2 style='text-align: center;'>❌ ¿Quieres eliminar tu suscripción?</h2>"
-                        + "<p style='font-size: 18px;'>Si ya no deseas participar en los sorteos:</p>"
-                        + "<ul style='font-size: 18px;'>"
-                        + "  <li>🔥 Haz clic en <b>'Eliminar Suscripción'</b></li>"
-                        + "  <li>🔄 Si deseas volver, tendrás que registrarte nuevamente</li>"
-                        + "</ul>"
-
-                        // 🏡 Navegar en la página
-                        + "<h2 style='text-align: center;'>🏡 Navega fácilmente en SORTEC</h2>"
-                        + "<p style='font-size: 18px;'>Puedes acceder a cualquier sección:</p>"
-                        + "<p style='font-size: 18px; text-align: center;'>"
-                        + "🏠 <b>Inicio</b> | 🎟️ <b>Sorteos</b> | 🎁 <b>Beneficios</b> | 🛍️ <b>Tienda</b> | 🎮 <b>Juegos</b> | 🏆 <b>Ganadores</b>"
-                        + "</p>"
-
-                        // 🎉 Explorar sorteos y ganadores
-                        + "<h2 style='text-align: center;'>🎉 Explorar sorteos y ganadores</h2>"
-                        + "<ul style='font-size: 18px;'>"
-                        + "  <li>📢 <b>'Sorteos':</b> Encuentra los sorteos activos</li>"
-                        + "  <li>🎊 <b>'Ganadores':</b> Revisa quiénes han ganado premios</li>"
-                        + "</ul>"
-
-                        // 🚀 Próximamente...
-                        + "<h2 style='text-align: center;'>🚀 Próximamente...</h2>"
-                        + "<p style='font-size: 18px;'>Estamos trabajando en más opciones como:</p>"
-                        + "<ul style='font-size: 18px;'>"
-                        + "  <li>🎁 <b>Beneficios</b></li>"
-                        + "  <li>🛍️ <b>Tienda</b></li>"
-                        + "  <li>🎮 <b>Juegos</b></li>"
-                        + "</ul>"
-
-                        // 📲 Redes Sociales
-                        + "<h2 style='text-align: center;'>🌟 ¡Únete a nuestra comunidad en Facebook! 🌟</h2>"
-                        + "<p style='font-size: 18px;'>Síguenos y comparte con tus amigos 💙</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>¡Prepárate para vivir la emoción de los sorteos en vivo! 🎥🔴</p>"
+                        + "<h2 style='text-align: center;'>🎥 ¡MIRA EL STREAMING EN VIVO! 🎥</h2>"
+                        + "<p style='font-size: 18px; text-align: center;'>El link del streaming en vivo está disponible en nuestro Facebook:</p>"
                         + "<p style='text-align: center;'>"
-                        + "<a href='https://www.facebook.com/profile.php?id=61571509086893' target='_blank' style='font-size: 20px; color: blue; font-weight: bold;'>📲 Dale 'Me Gusta' en Facebook</a>"
+                        + "<a href='https://www.facebook.com/1686884439/videos/672127105241426/' target='_blank' style='font-size: 20px; color: blue; font-weight: bold;'>📲 Ir al Streaming en Facebook</a>"
                         + "</p>"
-
-                        // 🚀 Despedida
-                        + "<h2 style='text-align: center;'>✨ ¡Gracias por ser parte de la familia SORTEC S.A.C.! ✨</h2>"
-                        + "<p style='font-size: 18px; text-align: center;'>📢 ¡Cuantos más seamos, más sorteos podremos hacer! 🎊</p>"
-                        + "<p style='font-size: 18px; text-align: center;'>📩 Cualquier duda, contáctanos. ¡Estamos para ayudarte!</p>"
+                        + "<h2 style='color: #ff5733;'>📸 Detalles del sorteo</h2>"
+                        + "<p>Consulta la información sobre el sorteo en la imagen a continuación:</p>"
+                        + "<img src='" + sorteoImageUrl + "' width='600' style='border-radius: 10px; margin-top: 10px;'/>"
+                        + "<hr>"
+                        + "<h2 style='text-align: center;'>📢 ¡NO TE LO PIERDAS! 📢</h2>"
+                        + "<p style='font-size: 18px; text-align: center;'>Sigue nuestras redes para estar al tanto de todas las novedades 🎯🚀</p>"
+                        + "<p style='text-align: center;'>"
+                        + "<a href='https://www.facebook.com/profile.php?id=61571509086893' target='_blank' style='font-size: 20px; color: blue; font-weight: bold;'>👍 Síguenos en Facebook</a>"
+                        + "</p>"
+                        + "<h2 style='text-align: center;'>✨ ¡GRACIAS POR FORMAR PARTE DE SORTEC! ✨</h2>"
+                        + "<p style='font-size: 18px; text-align: center;'>🎊 ¡Más participantes, más premios! 🎁</p>"
+                        + "<p style='font-size: 18px; text-align: center;'>📩 Cualquier duda, contáctanos. ¡Estamos para ayudarte! 🚀</p>"
                         + "<p style='font-size: 18px; text-align: center;'>Atentamente, <b>🎯 El equipo de SORTEC S.A.C. 🚀</b></p>";
 
                 helper.setText(content, true);
@@ -773,11 +723,87 @@ public class ClientService {
                 ).then();
     }
 
+    public Mono<Void> sendMassWhatsAppMessage(String message) {
+        return repository.findAll()
+                .filter(client -> "pendiente".equalsIgnoreCase(client.getEstado()) || "inactivo".equalsIgnoreCase(client.getEstado()))
+                .flatMap(client -> sendWhatsAppMessage(client.getTelefono(), message, client.getNombres()))
+                .then();
+    }
+
+    public Mono<Void> sendWhatsAppMessage(String phoneNumber, String message, String clientName) {
+        return Mono.fromRunnable(() -> {
+            try {
+                if (phoneNumber == null || phoneNumber.isEmpty()) {
+                    System.err.println("🚨 Error: Número de teléfono vacío o nulo.");
+                    return;
+                }
+
+                String formattedNumber = "51" + phoneNumber; // Código de país Perú (+51)
+
+                String completeMessage = """
+                📢 ¡Tu suscripción ha vencido! 🔔 - SORTEC\n
+                👋 Hola %s,\n
+                🚨 Tu suscripción ha vencido hace más de un mes. Queremos que sigas formando parte de nuestra comunidad. 🎉\n
+                🔑 Para renovarla, sigue estos pasos:\n
+                1️⃣ Ingresa a nuestra plataforma: 🔗 https://sortsortech.azurewebsites.net/\n
+                2️⃣ Inicia sesión con tus credenciales:\n
+                   📌 Usuario: Tu número de DNI\n
+                   🔒 Contraseña: Tu código Sortec\n
+                3️⃣ Dirígete al apartado 'Ver Suscripción' 📋 y haz clic en 'Renovar Suscripción' 🔄\n
+                📢 ¡Es rápido y fácil! No dejes pasar la oportunidad de seguir participando en nuestros sorteos. 🎁\n
+                ✨ ¡MUCHOS MÁS PREMIOS TE ESTÁN ESPERANDO! 🎊✨\n
+                🙏 ¡Gracias por ser parte de esta increíble comunidad! 🚀
+                """.formatted(clientName);
+
+                String requestBody = """
+                {
+                    "messaging_product": "whatsapp",
+                    "recipient_type": "individual",
+                    "to": "%s",
+                    "type": "template",
+                    "template": {
+                        "name": "hello_world",
+                        "language": { "code": "en_US" }
+                    }
+                }
+                """.formatted(formattedNumber);
 
 
+                System.out.println("🔹 Token usado: " + whatsappToken);
+                System.out.println("🔹 Phone Number ID: " + phoneNumberId);
+                System.out.println("🔹 API URL: " + whatsappApiUrl);
+                System.out.println("🔹 Número destinatario: " + formattedNumber);
+                System.out.println("🔹 JSON enviado: " + requestBody);
 
 
+                // Crear la conexión HTTP
+                URL url = new URL(whatsappApiUrl + "/" + phoneNumberId + "/messages");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Authorization", "Bearer " + whatsappToken);
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
 
+                // Enviar el JSON en la petición HTTP
+                try (OutputStream os = connection.getOutputStream()) {
+                    byte[] input = requestBody.getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                }
+
+                // Obtener respuesta del servidor
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    System.out.println("✅ Mensaje enviado a " + phoneNumber);
+                } else {
+                    System.err.println("🚨 Error enviando mensaje. Código: " + responseCode);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Error al enviar mensaje de WhatsApp: " + e.getMessage());
+            }
+        });
+    }
 
 
 
