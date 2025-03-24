@@ -334,6 +334,7 @@ public class ClientService {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
+                helper.setCc(ADMIN_EMAIL);
                 helper.setTo(client.getCorreo());
                 helper.setSubject("🎉 ¡Registro Aprobado en SORTEC! 🎟️");
 
@@ -655,6 +656,7 @@ public class ClientService {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
+                helper.setCc(ADMIN_EMAIL);
                 helper.setTo(client.getCorreo());
                 helper.setSubject("🎉 ¡Tu Pago de Suscripción ha sido Aprobado! - SORTEC 🚀");
 
