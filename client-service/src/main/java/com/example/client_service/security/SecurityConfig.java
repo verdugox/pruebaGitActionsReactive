@@ -29,7 +29,8 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Configuración CORS actualizada
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers(HttpMethod.GET, "/api/payments/approve-payment", "/api/payments/approve-payment/**").permitAll() // ✅ Permitir sin autenticación
+                        .pathMatchers(HttpMethod.DELETE, "/api/clients/**").permitAll() // ✅ Permitir solo DELETE sin JWT
+                        .pathMatchers(HttpMethod.GET, "/api/payments/approve-payment", "/api/payments/approve-payment/**").permitAll()
                         .pathMatchers(
                                 "/api/auth/login",
                                 "/api/clients",
@@ -38,13 +39,14 @@ public class SecurityConfig {
                                 "/api/clients/approve/**",
                                 "/api/payments/approve-payment",
                                 "/api/payments/approve-payment/**"
-                        ).permitAll() // 🔹 Permitir acceso sin autenticación
+                        ).permitAll()
                         .pathMatchers("/api/menu").authenticated()
                         .pathMatchers("/api/clients/admin/**").hasRole("ADMINISTRADOR")
                         .pathMatchers("/api/clients/perfil").hasAnyRole("ADMINISTRADOR", "PARTICIPANTE")
                         .pathMatchers("/api/clients/**").authenticated()
                         .anyExchange().authenticated()
                 )
+
                 .addFilterAt(new JwtAuthenticationFilter(jwtUtil), SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
