@@ -42,7 +42,7 @@ public class PaymentHistoryController {
 
     @Autowired
     private AzureProperties azureProperties;
-
+    
     private EventHubProducerAsyncClient eventHubClient;
 
     @Value("${app.base-url}")
@@ -52,17 +52,10 @@ public class PaymentHistoryController {
 
     @PostConstruct
     public void setupEventHub() {
-        String connectionString = azureProperties.getConnectionString();
-        if (connectionString == null || connectionString.contains("dummy")) {
-            log.error("❌ EventHub connection string is not properly configured!");
-            return;
-        }
-
         eventHubClient = new EventHubClientBuilder()
-                .connectionString(connectionString, "clientes-registro-eventhub")
+                .connectionString(eventHubConnectionString, "clientes-registro-eventhub")
                 .buildAsyncProducerClient();
     }
-
 
 
     public PaymentHistoryController(PaymentHistoryService service,

@@ -33,6 +33,7 @@ app:
   base-url: "https://api.sorteosc.com"
   sorteo-image-url: ${SORTEO_IMAGE_URL:https://res.cloudinary.com/dizkdk1te/image/upload/v1737902820/voucher01_ds91fj.jpg}  # Valor desde GitHub Actions o default
 
+
 whatsapp:
   token: "EAAx5T8VwAwQBO6uZBWSvTrBRfIOA3C9NRTu27knIekZBzDz2wABirA7ZAaACMRTg0btetZAAttIuuVZCqSipjN4xZAPiitq3KC2IyZAhXUu9rrLMWuahcTn70tRdqP3YE7N3LhA8oUlocgZAeWYizglXk0zh9qgcHKhVqwgXqCWUAqyJgqb8Pz1R8bXR40ZBdwd69DfGpdKuzyVjWLtnoq7x1j9C3YA6kbetF27OPJ4sB"  # Reemplázalo con tu token real
   phone-number-id: "601676066359517"
