@@ -38,10 +38,17 @@ whatsapp:
   phone-number-id: "601676066359517"
   api-url: "https://graph.facebook.com/v19.0"
 
+azure:
+  eventhub:
+    connection-string: ${EVENTHUB_CONNECTION_STRING}
+    name: "clientes-registro-eventhub"
+
+
 logging:
   level:
-    root: INFO  # 🔹 Solo muestra errores críticos
-    org.springframework.web: INFO
-    org.springframework.data: INFO
-    org.springframework.boot: INFO
-    reactor: INFO
+    root: ERROR  # 🔹 Solo muestra errores críticos
+    org.springframework.web: ERROR
+    org.springframework.data: ERROR
+    org.springframework.boot: ERROR
+    reactor: ERROR
+    com.azure: ERROR

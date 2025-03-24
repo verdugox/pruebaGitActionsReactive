@@ -124,6 +124,8 @@ jobs:
                     value: "https://api.sorteosc.com"
                   - name: SORTEO_IMAGE_URL
                     value: "${{ secrets.SORTEO_IMAGE_URL }}"
+                  - name: EVENTHUB_CONNECTION_STRING
+                    value: "${{ secrets.EVENTHUB_CONNECTION_STRING }}"
           ---
           apiVersion: v1
           kind: Service

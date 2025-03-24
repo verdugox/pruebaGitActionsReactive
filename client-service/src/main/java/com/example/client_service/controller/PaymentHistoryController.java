@@ -8,15 +8,22 @@ import com.example.client_service.repository.PaymentHistoryRepository;
 import com.example.client_service.service.ClientService;
 import com.example.client_service.service.PaymentHistoryService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import com.azure.messaging.eventhubs.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
@@ -27,6 +34,19 @@ public class PaymentHistoryController {
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final ClientRepository clientRepository;
     private final ClientService clientService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private EventHubProducerAsyncClient eventHubClient;
+
+    @PostConstruct
+    public void setupEventHub() {
+        eventHubClient = new EventHubClientBuilder()
+                .connectionString("EVENTHUB_CONNECTION_STRING", "clientes-registro-eventhub")
+                .buildAsyncProducerClient();
+    }
+
 
     public PaymentHistoryController(PaymentHistoryService service,
                                     PaymentHistoryRepository paymentHistoryRepository,
@@ -123,6 +143,7 @@ public class PaymentHistoryController {
         return paymentHistoryRepository.save(payment)
                 .flatMap(savedPayment ->
                         clientService.sendSubscriptionPaymentNotification(client, savedPayment)
+                                .then(publishPaymentEvent(client, savedPayment))
                                 .then(Mono.just(ResponseEntity.ok(savedPayment)))
                 );
     }
@@ -151,6 +172,23 @@ public class PaymentHistoryController {
                 })
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    private Mono<Void> publishPaymentEvent(Client client, PaymentHistory payment) {
+        return Mono.fromCallable(() -> {
+            Map<String, Object> payload = Map.of(
+                    "clienteId", client.getId(),
+                    "voucherUrl", payment.getVoucherUrl(),
+                    "tipo", "renovacion"
+            );
+            return objectMapper.writeValueAsString(payload);
+        }).flatMap(eventJson -> {
+            EventData eventData = new EventData(eventJson);
+            return Mono.fromFuture(eventHubClient.send(Collections.singletonList(eventData)).toFuture())
+                    .doOnSuccess(unused -> log.info("Evento renovación enviado correctamente"))
+                    .doOnError(error -> log.error("Error enviando evento renovación", error));
+        }).then();
+    }
+
 
 
 

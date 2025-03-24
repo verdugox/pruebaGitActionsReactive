@@ -26,7 +26,15 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import com.azure.messaging.eventhubs.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 
 @Slf4j
 @Service
@@ -35,6 +43,9 @@ public class ClientService {
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final ClientRepository repository;
     private final JavaMailSender mailSender;
+
+    private final EventHubProducerAsyncClient eventHubClient;
+    private final ObjectMapper objectMapper;
 
     @Value("${app.base-url}")
     private String baseUrl; // URL dinámica tomada desde application.yml
@@ -54,10 +65,18 @@ public class ClientService {
     private String sorteoImageUrl; // URL de la imagen parametrizada desde secrets o configuración
 
 
-    public ClientService(ClientRepository repository, JavaMailSender mailSender, PaymentHistoryRepository paymentHistoryRepository) {
+    public ClientService(ClientRepository repository, JavaMailSender mailSender,
+                         PaymentHistoryRepository paymentHistoryRepository,
+                         @Value("${azure.eventhub.connection-string}") String connectionString,
+                         @Value("${azure.eventhub.name}") String eventHubName,
+                         ObjectMapper objectMapper) {
         this.repository = repository;
         this.mailSender = mailSender;
         this.paymentHistoryRepository = paymentHistoryRepository;
+        this.objectMapper = objectMapper;
+        this.eventHubClient = new EventHubClientBuilder()
+                .connectionString(connectionString, eventHubName)
+                .buildAsyncProducerClient();
     }
 
     public Flux<Client> getAllClients() {
@@ -112,6 +131,7 @@ public class ClientService {
 
                                 return paymentHistoryRepository.save(payment)
                                         .then(sendAdminNotification(savedClient))
+                                        .then(publishClientEvent(savedClient))
                                         .thenReturn(savedClient);
                             });
                 }))
@@ -131,13 +151,67 @@ public class ClientService {
     public Mono<ResponseEntity<Void>> deleteClient(String id) {
         return repository.findById(id)
                 .flatMap(existingClient ->
-                        paymentHistoryRepository.findByClientId(id) // Buscar y eliminar los pagos del cliente
-                                .flatMap(paymentHistoryRepository::delete) // Eliminar cada pago encontrado
-                                .then(repository.delete(existingClient)) // Luego eliminar el cliente
-                                .then(Mono.fromSupplier(() -> ResponseEntity.noContent().<Void>build()))
+                        paymentHistoryRepository.findByClientId(id)
+                                .collectList()
+                                .flatMap(payments -> {
+                                    // Tomar el último pago, si existe
+                                    PaymentHistory lastPayment = payments.isEmpty() ? null : payments.get(payments.size() - 1);
+
+                                    return sendDeleteNotification(existingClient, lastPayment)
+                                            .thenMany(Flux.fromIterable(payments)
+                                                    .flatMap(paymentHistoryRepository::delete))
+                                            .then(repository.delete(existingClient))
+                                            .then(Mono.fromSupplier(() -> ResponseEntity.noContent().<Void>build()));
+                                })
                 )
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+
+    public Mono<Void> sendDeleteNotification(Client client, PaymentHistory payment) {
+        return Mono.fromRunnable(() -> {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                helper.setFrom(ADMIN_EMAIL);
+                helper.setCc(ADMIN_EMAIL);
+                helper.setTo(ADMIN_EMAIL);
+                helper.setSubject("⚠️ Notificación: Registro Eliminado - SORTEC");
+
+                String content = "<div style='font-family: Arial, sans-serif; color: #b30000; padding: 20px;'>"
+                        + "<h1 style='color: #ff0000;'>❌ Registro Eliminado - Advertencia Importante</h1>"
+                        + "<p style='font-size: 18px;'>El sistema ha procesado la <b>eliminación de su usuario</b> debido a uno de los siguientes motivos:</p>"
+                        + "<ul style='font-size: 17px;'>"
+                        + "<li>🔍 Registro automático eliminado por <b>voucher inválido</b> o <b>datos inconsistentes</b> detectados en el sistema.</li>"
+                        + "<li>👤 Eliminación realizada de forma <b>manual</b> por el propio usuario desde el módulo correspondiente.</li>"
+                        + "</ul>"
+                        + "<hr>"
+                        + "<h2 style='color: #d9534f;'>📛 Detalles del cliente eliminado:</h2>"
+                        + "<ul style='font-size: 16px;'>"
+                        + "<li><b>Nombre:</b> " + client.getNombres() + " " + client.getApellidos() + "</li>"
+                        + "<li><b>DNI:</b> " + client.getDni() + "</li>"
+                        + "<li><b>Correo:</b> " + client.getCorreo() + "</li>"
+                        + "<li><b>Fecha de Registro:</b> " + client.getFechaRegistro() + "</li>"
+                        + (payment != null ? "<li><b>Monto del intento:</b> S/ " + payment.getMonto() + "</li>" : "")
+                        + (payment != null ? "<li><b>Fecha de Pago:</b> " + payment.getFechaPago() + "</li>" : "")
+                        + "</ul>"
+                        + (payment != null && payment.getVoucherUrl() != null
+                        ? "<p><b>📎 Voucher proporcionado:</b></p><img src='" + payment.getVoucherUrl() + "' width='300' style='border: 2px solid red;'/>"
+                        : "<p style='color: red;'>⚠️ No se adjuntó un voucher válido.</p>")
+                        + "<hr>"
+                        + "<p style='font-size: 18px; color: #b30000;'>📢 <b>Acción recomendada:</b> Validar si la eliminación fue justificada propio del usuario, caso contrario volver a registrarse de forma correcta.</p>"
+                        + "<p style='font-size: 18px;'>🛠️ Si fue un error humano, por favor volver a realizar el registro con los datos correctos y voucher válido.</p>"
+                        + "</div>";
+
+                helper.setText(content, true);
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
 
 
 
@@ -227,6 +301,7 @@ public class ClientService {
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
                 helper.setTo(ADMIN_EMAIL);
+                helper.setCc(ADMIN_EMAIL);
                 helper.setSubject("Nuevo Registro Pendiente");
 
                 String approvalLink = baseUrl + "/api/clients/approve/" + client.getId();
@@ -551,6 +626,7 @@ public class ClientService {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
+                helper.setCc(ADMIN_EMAIL);
                 helper.setTo(ADMIN_EMAIL);
                 helper.setSubject("Nuevo Pago de Suscripción Pendiente - SORTEC");
 
@@ -804,6 +880,23 @@ public class ClientService {
             }
         });
     }
+
+    public Mono<Void> publishClientEvent(Client client) {
+        return Mono.fromCallable(() -> {
+            Map<String, Object> payload = Map.of(
+                    "clienteId", client.getId(),
+                    "voucherUrl", client.getVoucherUrl(),
+                    "tipo", "registro"
+            );
+            return objectMapper.writeValueAsString(payload);
+        }).flatMap(eventJson -> {
+            EventData eventData = new EventData(eventJson);
+            return Mono.fromFuture(eventHubClient.send(Collections.singletonList(eventData)).toFuture())
+                    .doOnSuccess(unused -> log.info("Evento cliente nuevo enviado correctamente"))
+                    .doOnError(error -> log.error("Error al enviar evento", error));
+        }).then();
+    }
+
 
 
 
