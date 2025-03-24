@@ -175,7 +175,7 @@ public class ClientService {
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
                 helper.setFrom(ADMIN_EMAIL);
                 helper.setCc(ADMIN_EMAIL);
-                helper.setTo(client.getCorreo());
+                helper.setTo(ADMIN_EMAIL);
                 helper.setSubject("⚠️ Notificación: Registro Eliminado - SORTEC");
 
                 String content = "<div style='font-family: Arial, sans-serif; color: #b30000; padding: 20px;'>"
