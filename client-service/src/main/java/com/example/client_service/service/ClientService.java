@@ -535,6 +535,54 @@ public class ClientService {
     }
     */
 
+    @Scheduled(cron = "0 0 12 1,15 * ?") // Se ejecuta el día 1 y 15 de cada mes a las 12:00 pm
+    public Mono<Void> checkSubscriptionStatus() {
+        return repository.findAll()
+                .flatMap(client -> paymentHistoryRepository.findByClientId(client.getId())
+                        .collectList()
+                        .flatMap(payments -> {
+                            if (payments.isEmpty()) {
+                                return Mono.empty();
+                            }
+
+                            PaymentHistory lastPayment = payments.stream()
+                                    .max((p1, p2) -> ZonedDateTime.parse(p1.getFechaPago(), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima")))
+                                            .compareTo(ZonedDateTime.parse(p2.getFechaPago(), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"))))
+                                    ).orElse(null);
+
+                            if (lastPayment == null || lastPayment.getFechaPago() == null) {
+                                return Mono.empty();
+                            }
+
+                            ZonedDateTime fechaUltimoPago = ZonedDateTime.parse(lastPayment.getFechaPago(), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima")));
+                            int diaOriginal = fechaUltimoPago.getDayOfMonth();
+                            ZonedDateTime fechaVencimiento = fechaUltimoPago.plusMonths(1);
+
+                            if (fechaVencimiento.getDayOfMonth() != diaOriginal) {
+                                fechaVencimiento = fechaVencimiento.withDayOfMonth(fechaVencimiento.getMonth().length(fechaVencimiento.toLocalDate().isLeapYear()));
+                            }
+
+                            ZonedDateTime ahora = ZonedDateTime.now(ZoneId.of("America/Lima"));
+
+                            if (ahora.isAfter(fechaVencimiento) && ahora.isBefore(fechaVencimiento.plusMonths(2))) {
+                                if (!"pendiente".equalsIgnoreCase(client.getEstado())) {
+                                    client.setEstado("pendiente");
+                                    return repository.save(client)
+                                            .then(sendPaymentReminder(client, "Tu suscripción ha vencido. Por favor, realiza el pago para seguir participando."));
+                                }
+                                return sendPaymentReminder(client, "Recordatorio: Tu suscripción sigue vencida. Renueva ahora y no pierdas tus beneficios.");
+                            } else if (ahora.isAfter(fechaVencimiento.plusMonths(2))) {
+                                client.setEstado("inactivo");
+                                return repository.save(client)
+                                        .then(sendSubscriptionExpired(client, "Tu cuenta ha sido inactivada por falta de pago. Para reactivarla, inicia sesión y realiza el pago correspondiente."));
+                            }
+
+                            return Mono.empty();
+                        })
+                ).then();
+    }
+
+
 
     private Mono<Void> sendPaymentReminder(Client client, String message) {
         return Mono.fromRunnable(() -> {
@@ -546,7 +594,7 @@ public class ClientService {
                 helper.setSubject("📢 ¡Renueva tu Suscripción en SORTEC! 🏆");
 
                 String content = "<div style='font-family: Arial, sans-serif; text-align: center; color: #333;'>"
-                        + "<h1 style='color: #d9534f;'>⚠️ ¡Atención, " + client.getNombres() + "! ⚠️</h1>"
+                        + "<h1 style='color: #d9534f;'>⚠️ ¡Atención, " + client.getNombres() + " " + client.getApellidos() + "! ⚠️</h1>"
                         + "<p style='font-size: 18px;'>🕒 " + message + "</p>"
                         + "<h2 style='color: #28a745;'>🔄 ¿Cómo renovar tu suscripción? 🔄</h2>"
                         + "<p style='font-size: 18px;'>Sigue estos simples pasos para continuar disfrutando de SORTEC y no perderte los increíbles premios 🎁:</p>"
@@ -554,13 +602,15 @@ public class ClientService {
                         + "  <li>🔹 Ingresa a nuestra plataforma: <a href='http://sortsortech.azurewebsites.net/' target='_blank'>🔗 SORTEC</a></li>"
                         + "  <li>🔹 Inicia sesión con tus credenciales:</li>"
                         + "    <ul>"
-                        + "      <li>📌 <b>Usuario:</b> Tu número de DNI con el que te registraste</li>"
-                        + "      <li>🔒 <b>Contraseña:</b> Tu código Sortec que se te envió por correo cuando te registraste por primera vez</li>"
+                        + "      <li>📌 <b>Usuario (DNI):</b> " + client.getDni() + "</li>"
+                        + "      <li>🔒 <b>Contraseña (Código Sortec):</b> " + client.getCodigoSortec() + "</li>"
                         + "    </ul>"
                         + "  <li>🔹 Dirígete al apartado <b>'Ver Suscripción' 📋</b></li>"
                         + "  <li>🔹 Haz clic en el botón <b>'Renovar Suscripción' 🔄</b></li>"
                         + "  <li>💳 Realiza el pago y ¡listo! 🎉</li>"
                         + "</ol>"
+                        + "<p style='font-size: 18px;'>🏆 ¡Continúa participando y prepárate para los próximos premios increíbles! 🎁</p>"
+                        + "<img src='" + sorteoImageUrl + "' alt='Sorteo' style='width:100%; max-width:600px; border-radius: 10px; margin-top: 10px;'/>"
                         + "<h3 style='color: #ff5733;'>✨ ¡No dejes pasar esta oportunidad! ✨</h3>"
                         + "<p style='font-size: 18px;'>🔔 Si ya realizaste tu pago, puedes ignorar este mensaje. De lo contrario, <b>asegúrate de renovarlo cuanto antes</b> para seguir participando en los sorteos. 🎟️</p>"
                         + "<a href='http://sortsortech.azurewebsites.net/' target='_blank' "
@@ -588,7 +638,7 @@ public class ClientService {
                 helper.setSubject("📢 ¡Tu Suscripción ha Expirado! - SORTEC ⏳");
 
                 String content = "<div style='font-family: Arial, sans-serif; text-align: center; color: #333;'>"
-                        + "<h1 style='color: #d9534f;'>⏳ ¡Tu suscripción ha expirado, " + client.getNombres() + "! ⏳</h1>"
+                        + "<h1 style='color: #d9534f;'>⏳ ¡Tu suscripción ha expirado, " + client.getNombres() + " " + client.getApellidos() + "! ⏳</h1>"
                         + "<p style='font-size: 18px;'>⚠️ " + message + "</p>"
                         + "<h2 style='color: #28a745;'>🔄 ¿Cómo reactivar tu suscripción? 🔄</h2>"
                         + "<p style='font-size: 18px;'>No te preocupes, ¡es fácil! Sigue estos pasos para volver a disfrutar de los beneficios de SORTEC 🎉:</p>"
@@ -596,13 +646,15 @@ public class ClientService {
                         + "  <li>🔹 Ingresa a nuestra plataforma: <a href='http://sortsortech.azurewebsites.net/' target='_blank'>🔗 SORTEC</a></li>"
                         + "  <li>🔹 Inicia sesión con tus credenciales:</li>"
                         + "    <ul>"
-                        + "      <li>📌 <b>Usuario:</b> Tu número de DNI con el que te registraste</li>"
-                        + "      <li>🔒 <b>Contraseña:</b> Tu código Sortec que se te envió por correo cuando te registraste por primera vez</li>"
+                        + "      <li>📌 <b>Usuario (DNI):</b> " + client.getDni() + "</li>"
+                        + "      <li>🔒 <b>Contraseña (Código Sortec):</b> " + client.getCodigoSortec() + "</li>"
                         + "    </ul>"
                         + "  <li>🔹 Ve a la sección <b>'Ver Suscripción' 📋</b></li>"
                         + "  <li>🔹 Presiona el botón <b>'Reactivar Suscripción' 🔄</b></li>"
                         + "  <li>💳 Realiza tu pago y ¡listo! 🎉</li>"
                         + "</ol>"
+                        + "<p style='font-size: 18px;'>🏆 ¡Continúa participando y prepárate para los próximos premios increíbles! 🎁</p>"
+                        + "<img src='" + sorteoImageUrl + "' alt='Sorteo' style='width:100%; max-width:600px; border-radius: 10px; margin-top: 10px;'/>"
                         + "<h3 style='color: #ff5733;'>✨ ¡Te extrañamos en la familia SORTEC! ✨</h3>"
                         + "<p style='font-size: 18px;'>🚀 No dejes pasar la oportunidad de seguir participando en nuestros sorteos y ganar increíbles premios. 🎁</p>"
                         + "<a href='http://sortsortech.azurewebsites.net/' target='_blank' "

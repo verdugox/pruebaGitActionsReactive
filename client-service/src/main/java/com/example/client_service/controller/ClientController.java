@@ -132,11 +132,11 @@ public class ClientController {
     }
 
 
-   /* @GetMapping("/test-subscription-check")
+    @GetMapping("/test-subscription-check")
     public Mono<ResponseEntity<String>> testSubscriptionCheck() {
         return service.checkSubscriptionStatus()
                 .then(Mono.just(ResponseEntity.ok("Verificación de suscripciones ejecutada y finalizada correctamente.")));
-    }*/
+    }
 
     @PostMapping("/send-dynamic-mass-email")
     public Mono<ResponseEntity<String>> sendDynamicMassEmail(@RequestBody Map<String, Object> request) {
