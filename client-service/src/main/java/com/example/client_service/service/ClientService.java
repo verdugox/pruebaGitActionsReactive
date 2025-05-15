@@ -480,9 +480,8 @@ public class ClientService {
         });
     }
 
-
-
-    @Scheduled(cron = "0 0 12 * * ?")
+    /*
+     @Scheduled(cron = "0 0 12 * * ?")
     public Mono<Void> checkSubscriptionStatus() {
         return repository.findAll()
                 .flatMap(client -> paymentHistoryRepository.findByClientId(client.getId())
@@ -534,6 +533,7 @@ public class ClientService {
                         })
                 ).then();
     }
+    */
 
 
     private Mono<Void> sendPaymentReminder(Client client, String message) {
