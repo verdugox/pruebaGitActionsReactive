@@ -480,9 +480,9 @@ public class ClientService {
         });
     }
 
-    /*
-     @Scheduled(cron = "0 0 12 * * ?")
-    public Mono<Void> checkSubscriptionStatus() {
+
+    @Scheduled(cron = "0 0 6,12,19,0 * * ?", zone = "America/Lima")
+    public Mono<Void> checkSubscriptionStatus2() {
         return repository.findAll()
                 .flatMap(client -> paymentHistoryRepository.findByClientId(client.getId())
                         .collectList()
@@ -504,36 +504,33 @@ public class ClientService {
                             int diaOriginal = fechaUltimoPago.getDayOfMonth();
                             ZonedDateTime fechaVencimiento = fechaUltimoPago.plusMonths(1);
 
-                            // ✅ Ajustar si el mes siguiente no tiene el mismo día
                             if (fechaVencimiento.getDayOfMonth() != diaOriginal) {
                                 fechaVencimiento = fechaVencimiento.withDayOfMonth(fechaVencimiento.getMonth().length(fechaVencimiento.toLocalDate().isLeapYear()));
                             }
 
-                            ZonedDateTime fechaNotificacion3Dias = fechaVencimiento.minusDays(3);
-                            ZonedDateTime fechaNotificacion2Dias = fechaVencimiento.minusDays(2);
-                            ZonedDateTime fechaNotificacion1Dia = fechaVencimiento.minusDays(1);
                             ZonedDateTime ahora = ZonedDateTime.now(ZoneId.of("America/Lima"));
 
-                            if (ahora.isAfter(fechaNotificacion3Dias) && ahora.isBefore(fechaNotificacion2Dias)) {
-                                return sendPaymentReminder(client, "Faltan 3 días para que tu suscripción venza.");
-                            } else if (ahora.isAfter(fechaNotificacion2Dias) && ahora.isBefore(fechaNotificacion1Dia)) {
-                                return sendPaymentReminder(client, "Faltan 2 días para que tu suscripción venza.");
-                            } else if (ahora.isAfter(fechaNotificacion1Dia) && ahora.isBefore(fechaVencimiento)) {
-                                return sendPaymentReminder(client, "Último día para renovar tu suscripción.");
-                            } else if (ahora.isAfter(fechaVencimiento) && ahora.isBefore(fechaVencimiento.plusMonths(2))) {
-                                client.setEstado("pendiente");
-                                return repository.save(client)
-                                        .then(sendSubscriptionExpired(client, "Tu suscripción ha vencido y tu estado es 'pendiente'. Por favor, realiza tu pago."));
+                            if (ahora.isAfter(fechaVencimiento) && ahora.isBefore(fechaVencimiento.plusMonths(2))) {
+                                // ✅ Solo cambia y notifica si el estado actual NO es "pendiente"
+                                if (!"pendiente".equalsIgnoreCase(client.getEstado())) {
+                                    client.setEstado("pendiente");
+                                    return repository.save(client)
+                                            .then(sendSubscriptionExpired(client, "Tu suscripción ha vencido y tu estado es 'pendiente'. Por favor, realiza tu pago."));
+                                } else {
+                                    return Mono.empty();
+                                }
                             } else if (ahora.isAfter(fechaVencimiento.plusMonths(2))) {
                                 client.setEstado("inactivo");
-                                return repository.save(client)
-                                        .then(sendSubscriptionExpired(client, "Tu cuenta ha sido inactivada por falta de pago. Para reactivarla, inicia sesión y realiza el pago correspondiente."));
+                                return repository.save(client);
                             }
+
                             return Mono.empty();
                         })
                 ).then();
     }
-    */
+
+
+
 
     @Scheduled(cron = "0 0 12 1,15 * ?") // Se ejecuta el día 1 y 15 de cada mes a las 12:00 pm
     public Mono<Void> checkSubscriptionStatus() {
