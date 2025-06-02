@@ -7,6 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "https://sortsortech.azurewebsites.net"
+})
 @RestController
 @RequestMapping("/api/sorteos")
 public class SorteoController {

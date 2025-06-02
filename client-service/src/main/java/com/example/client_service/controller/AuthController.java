@@ -8,7 +8,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000") // 🔹 Permitir solo frontend
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "https://sortsortech.azurewebsites.net"
+})
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
