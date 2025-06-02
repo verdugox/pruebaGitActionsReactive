@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // 🔹 Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🔹 Configuración CORS actualizada
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 🔥 ¡AGREGAR ESTO!
                         .pathMatchers(HttpMethod.DELETE, "/api/clients/**").permitAll() // ✅ Permitir solo DELETE sin JWT
                         .pathMatchers(HttpMethod.GET, "/api/payments/approve-payment", "/api/payments/approve-payment/**").permitAll()
                         .pathMatchers(
@@ -65,7 +66,7 @@ public class SecurityConfig {
                 "https://sortsortech.azurewebsites.net" // ✅ Permitir en producción
         ));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         corsConfig.setAllowCredentials(true); // 🔹 Permitir credenciales (tokens, cookies, etc.)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
