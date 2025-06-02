@@ -61,10 +61,9 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "https://sortsortech.azurewebsites.net"
-        ));
+        corsConfig.addAllowedOrigin("https://sortsortech.azurewebsites.net");
+        corsConfig.addAllowedOrigin("http://localhost:3000");
+
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfig.setAllowedHeaders(List.of("*")); // 🛠️ Permitir todos los headers para OPTIONS
         corsConfig.setExposedHeaders(List.of("Authorization", "Content-Type"));
