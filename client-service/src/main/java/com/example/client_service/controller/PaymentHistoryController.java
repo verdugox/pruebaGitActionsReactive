@@ -29,11 +29,12 @@ import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "https://sortsortech.azurewebsites.net"
-})
+
 @RestController
+@CrossOrigin(
+        origins = "https://sortsortech.azurewebsites.net",
+        allowCredentials = "true"
+)
 @RequestMapping("/api/payments")
 public class PaymentHistoryController {
     private final PaymentHistoryService service;

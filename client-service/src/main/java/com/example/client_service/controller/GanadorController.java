@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "https://sortsortech.azurewebsites.net"
-})
+
 @RestController
+@CrossOrigin(
+        origins = "https://sortsortech.azurewebsites.net",
+        allowCredentials = "true"
+)
 @RequestMapping("/api/ganadores")
 public class GanadorController {
 

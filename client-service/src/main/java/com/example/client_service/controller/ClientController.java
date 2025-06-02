@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@CrossOrigin(origins = {
-        "http://localhost:3000",
-        "https://sortsortech.azurewebsites.net"
-})
 @RestController
+@CrossOrigin(
+        origins = "https://sortsortech.azurewebsites.net",
+        allowCredentials = "true"
+)
 @RequestMapping("/api/clients")
 public class ClientController {
 
