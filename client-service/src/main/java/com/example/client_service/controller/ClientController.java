@@ -20,10 +20,6 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@CrossOrigin(
-        origins = "https://sortsortech.azurewebsites.net",
-        allowCredentials = "true"
-)
 @RequestMapping("/api/clients")
 public class ClientController {
 

@@ -8,10 +8,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@CrossOrigin(
-        origins = "https://sortsortech.azurewebsites.net",
-        allowCredentials = "true"
-)
 @RequestMapping("/api/sorteos")
 public class SorteoController {
 

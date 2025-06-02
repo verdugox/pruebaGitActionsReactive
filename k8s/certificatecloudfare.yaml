@@ -5,11 +5,6 @@ metadata:
   namespace: default
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://sortsortech.azurewebsites.net"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
-    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type, X-Requested-With"
     nginx.ingress.kubernetes.io/whitelist-source-range: |
       173.245.48.0/20,
       103.21.244.0/22,
@@ -26,7 +21,7 @@ metadata:
       104.24.0.0/14,
       172.64.0.0/13,
       131.0.72.0/22,
-      13.89.172.22  # ← IP pública de Azure WebApp
+      13.89.172.22  # ← IP pública de tu Azure WebApp (frontend)
 spec:
   ingressClassName: nginx
   rules:
