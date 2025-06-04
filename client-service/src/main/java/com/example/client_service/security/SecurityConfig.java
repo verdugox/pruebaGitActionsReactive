@@ -66,7 +66,7 @@ public class SecurityConfig {
                 "https://sortsortech.azurewebsites.net" // ✅ Permitir en producción
         ));
         corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "x-sortec-web-key"));
         corsConfig.setAllowCredentials(true); // 🔹 Permitir credenciales (tokens, cookies, etc.)
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
