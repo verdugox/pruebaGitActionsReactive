@@ -50,6 +50,19 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+
+
         <!-- Jakarta Mail API (Requerido para `MimeMessageHelper`) -->
         <dependency>
             <groupId>jakarta.mail</groupId>

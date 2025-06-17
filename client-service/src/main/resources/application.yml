@@ -1,7 +1,10 @@
 spring:
   application:
     name: client-service
-
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=10m
   data:
     mongodb:
       uri: mongodb+srv://verdugox123:Aries1990@sortec.rhyde.mongodb.net/clientsdb?ssl=true&retryWrites=true&w=majority
@@ -43,6 +46,32 @@ azure:
   eventhub:
     connection-string: ${EVENTHUB_CONNECTION_STRING}
     name: "clientes-registro-eventhub"
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      clientServiceCB:
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      paymentServiceCB:
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      sorteoServiceCB:  # ✅ nuevo
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+      ganadorServiceCB:  # ✅ nuevo
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+
 
 
 logging:

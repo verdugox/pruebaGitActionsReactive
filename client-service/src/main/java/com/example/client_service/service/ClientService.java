@@ -1,11 +1,14 @@
 package com.example.client_service.service;
 
+import com.example.client_service.config.CircuitBreakerFallbackHandler;
 import com.example.client_service.model.Client;
 import com.example.client_service.model.PaymentHistory;
 import com.example.client_service.repository.ClientRepository;
 import com.example.client_service.repository.PaymentHistoryRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -64,6 +67,9 @@ public class ClientService {
     @Value("${app.sorteo-image-url}")
     private String sorteoImageUrl; // URL de la imagen parametrizada desde secrets o configuración
 
+    @Autowired
+    private CircuitBreakerFallbackHandler fallbackHandler;
+
 
     public ClientService(ClientRepository repository, JavaMailSender mailSender,
                          PaymentHistoryRepository paymentHistoryRepository,
@@ -78,9 +84,14 @@ public class ClientService {
                 .connectionString(connectionString, eventHubName)
                 .buildAsyncProducerClient();
     }
-
+    @CircuitBreaker(name = "clientServiceCB", fallbackMethod = "getClientsFallback")
+    @Cacheable(value = "clients")
     public Flux<Client> getAllClients() {
         return repository.findAll();
+    }
+
+    public List<Client> getClientsFallback(Throwable t) {
+        return fallbackHandler.fallbackList(t);
     }
 
     public Mono<Client> getClientById(String id) {

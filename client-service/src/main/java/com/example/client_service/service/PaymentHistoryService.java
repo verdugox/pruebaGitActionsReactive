@@ -1,7 +1,11 @@
 package com.example.client_service.service;
 
+import com.example.client_service.config.CircuitBreakerFallbackHandler;
 import com.example.client_service.model.PaymentHistory;
 import com.example.client_service.repository.PaymentHistoryRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +17,9 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class PaymentHistoryService {
     private final PaymentHistoryRepository repository;
+
+    @Autowired
+    private CircuitBreakerFallbackHandler fallbackHandler;
 
     public PaymentHistoryService(PaymentHistoryRepository repository) {
         this.repository = repository;
@@ -35,8 +42,15 @@ public class PaymentHistoryService {
     }
 
     // ✅ Nuevo método para obtener todos los pagos
+    @CircuitBreaker(name = "paymentHistoryServiceCB", fallbackMethod = "getAllPaymentsFallback")
+    @Cacheable("payments")
     public Flux<PaymentHistory> getAllPayments() {
         return repository.findAll();
+    }
+
+    // Fallback para getAllPayments
+    public Flux<PaymentHistory> getAllPaymentsFallback(Throwable t) {
+        return fallbackHandler.fallbackFlux(t);
     }
 
     public Flux<PaymentHistory> getPaymentsByClientId(String clientId) {
