@@ -85,7 +85,6 @@ public class ClientService {
                 .buildAsyncProducerClient();
     }
     @CircuitBreaker(name = "clientServiceCB", fallbackMethod = "getClientsFallback")
-    @Cacheable(value = "clients")
     public Flux<Client> getAllClients() {
         return repository.findAll();
     }
